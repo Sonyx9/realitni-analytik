@@ -1,0 +1,93 @@
+---
+import Base from '@/layouts/Base.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Testimonials from '@/components/Testimonials.astro';
+import { site } from '@/data/site';
+const b = site.broker;
+const personLd = {
+  '@type': 'Person',
+  name: b.name,
+  jobTitle: 'Realitní makléř a analytik',
+  worksFor: { '@type': 'RealEstateAgent', name: site.name, url: site.url },
+  image: new URL(b.photo, Astro.site).toString(),
+  telephone: b.phone,
+  email: b.email,
+};
+---
+<Base
+  title="O nás – Ing. Petr Dřímal, realitní analytik"
+  description="Kdo je Realitní analytik: Ing. Petr Dřímal, 12 let na trhu, přes 2 500 ocenění. Proč pracuje s daty z katastru, jak vede prodej a proč má v nabídce jen tolik nemovitostí, kolik zvládne."
+  jsonLd={[personLd]}
+>
+  <section class="container-x grid gap-10 py-14 lg:grid-cols-12 lg:py-20">
+    <div class="lg:col-span-5">
+      <img src={b.photo} alt={b.name} width="600" height="750" class="aspect-[4/5] w-full rounded-md object-cover" />
+    </div>
+    <div class="lg:col-span-7 lg:pl-6">
+      <h1>{b.name}</h1>
+      <p class="mt-2 text-lg text-mute">{b.role} · Vyškov, Brno, Praha</p>
+      <div class="prose-ra measure mt-6 text-lg leading-relaxed text-ink-soft">
+        <p>K realitám jsem se dostal přes čísla. Roky jsem oceňoval nemovitosti pro banky, dědická řízení a majitele, kteří chtěli vědět, na čem jsou. Přes 2 500 ocenění mě naučilo jednu věc: cena není pocit ani přání, ale výsledek, který jde spočítat z toho, co se v okolí skutečně prodalo.</p>
+        <p>Když jsem začal nemovitosti prodávat, přišlo mi zvláštní, že většina prodejů začíná fotkou a inzerátem – a cenou „podle konkurence“. My začínáme daty. A pak nemovitost připravíme tak, aby ji kupující chtěl: opravíme, vymalujeme, uklidíme, nafotíme.</p>
+        <p>Nesbírám zakázky. V nabídce mám jen tolik nemovitostí, kolik dokážu skutečně odpracovat – prohlídky vedu sám, i o víkendu, a vy víte, co se s vaším prodejem děje každý týden.</p>
+      </div>
+      <dl class="mt-8 grid grid-cols-3 gap-6 border-t border-line pt-6">
+        <div><dt class="text-sm text-mute">Na trhu</dt><dd class="mt-0.5 num text-2xl font-semibold">{b.yearsOnMarket} let</dd></div>
+        <div><dt class="text-sm text-mute">Ocenění</dt><dd class="mt-0.5 num text-2xl font-semibold">{b.valuationsDone.toLocaleString('cs-CZ')}+</dd></div>
+        <div><dt class="text-sm text-mute">Dostupnost</dt><dd class="mt-0.5 num text-2xl font-semibold">7 dní</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="bg-beton">
+    <div class="container-x grid gap-10 py-20 lg:grid-cols-12">
+      <div class="lg:col-span-4">
+        <h2>Čemu věříme</h2>
+      </div>
+      <ul class="grid gap-8 sm:grid-cols-2 lg:col-span-8">
+        {[
+          ['Číslo před názorem', 'Každé doporučení – cena, sleva, načasování – musí být podložené daty, která vám ukážeme.'],
+          ['Připravená nemovitost se prodává sama', 'Kapající kohoutek stojí v očích kupujícího víc než instalatér. Proto ho opravíme dřív, než přijde první prohlídka.'],
+          ['Říkáme i to, co se nehodí', 'Když se prodej nevyplatí nebo je cena přehnaná, řekneme to na první schůzce. Ušetří to čas oběma stranám.'],
+          ['Bezpečný obchod', 'Smlouvy od advokáta, kupní cena v úschově, pojištění profesní odpovědnosti. Nic z toho není příplatek.'],
+        ].map(([t, x]) => (
+          <li>
+            <h3 class="font-sans text-lg font-semibold tracking-normal">{t}</h3>
+            <p class="mt-2 text-[0.95rem] leading-relaxed text-ink-soft">{x}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="container-x py-20">
+    <div class="grid gap-10 lg:grid-cols-12">
+      <div class="lg:col-span-4">
+        <h2>Kvalifikace a zázemí</h2>
+      </div>
+      <dl class="divide-y divide-line border-y border-line lg:col-span-8">
+        {[
+          ['Vzdělání', 'Ing. – TODO doplnit obor a školu'],
+          ['Certifikace', 'TODO doplnit (např. certifikovaný makléř dle zákona o realitním zprostředkování, kurzy oceňování)'],
+          ['Pojištění', 'Pojištění profesní odpovědnosti realitního zprostředkovatele – TODO doplnit pojišťovnu'],
+          ['Právní servis', 'Spolupracující advokátní kancelář – TODO doplnit název; advokátní úschova kupní ceny'],
+          ['Financování', 'Spolupracující hypoteční specialista – TODO doplnit'],
+          ['Inzerce', 'Sreality.cz, Reality.iDNES.cz, Bezrealitky.cz, Facebook, Instagram'],
+        ].map(([t, x]) => (
+          <div class="grid gap-2 py-4 sm:grid-cols-[200px_1fr] sm:gap-6">
+            <dt class="font-medium">{t}</dt>
+            <dd class="text-ink-soft">{x}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <section class="container-x pb-20">
+    <h2>Reference</h2>
+    <Testimonials class="mt-10" />
+    <a href="/reference/" class="btn btn-outline mt-8">Všechny reference</a>
+  </section>
+
+  <CtaBand />
+</Base>

@@ -1,0 +1,201 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '@/layouts/Base.astro';
+import ValuationForm from '@/components/ValuationForm.astro';
+import PropertyCard from '@/components/PropertyCard.astro';
+import Testimonials from '@/components/Testimonials.astro';
+import PriceChart from '@/components/PriceChart.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import { sortNemovitosti, formatDatum } from '@/lib/format';
+import { site } from '@/data/site';
+import heroCut from '@/assets/hero-makler-cut.png';
+import heroMakler from '@/assets/hero-makler.jpg';
+import krok1 from '@/assets/krok-1.jpg';
+import krok2 from '@/assets/krok-2.jpg';
+import krok3 from '@/assets/krok-3.jpg';
+
+const all = sortNemovitosti(await getCollection('nemovitosti'));
+const active = all.filter((n) => n.data.status === 'aktivni');
+const featured = [...active].sort((a, b) => Number(b.data.featured) - Number(a.data.featured)).slice(0, 9);
+const analyzy = (await getCollection('analyzy')).sort((a, b) => b.data.datum.getTime() - a.data.datum.getTime()).slice(0, 3);
+const b = site.broker;
+
+const pilire = [
+  { img: krok1, num: '01', title: 'Ocenění', text: 'Cena, kterou obhájím čísly a ukážu vám podklady. Taková, se kterou se neprodává „po slevě“ za půl roku.' },
+  { img: krok2, num: '02', title: 'Příprava', text: 'Drobné opravy, vymalování, úklid a nastavení interiéru. Kupující vidí nemovitost tak, jak ji chce koupit.' },
+  { img: krok3, num: '03', title: 'Prodej', text: 'Profesionální fotky a inzerce, prohlídky i o víkendu, vyjednávání, právní servis s úschovou a předání klíčů.' },
+];
+---
+<Base
+  title="Realitní analytik – prodej a ocenění nemovitostí Vyškov, Brno, Praha"
+  description="Ing. Petr Dřímal: prodej nemovitostí postavený na datech z realizovaných prodejů. Ocenění zdarma do 2 dnů, příprava nemovitosti, profesionální prezentace. Vyškov, jižní Morava, Praha."
+>
+  <!-- HERO v5: světlý podklad, typografický titulek po řádcích, makléř jako výřez (podle reference ilincev.com) -->
+  <section class="relative overflow-hidden bg-paper">
+    <div class="container-x grid gap-6 pt-12 lg:grid-cols-12 lg:items-end lg:gap-x-8 lg:gap-y-0 lg:pt-16">
+      <div class="pb-8 lg:col-span-7 lg:row-start-1 lg:pb-4">
+        <p class="eyebrow">Realitní makléř a analytik · Vyškov · Brno · Praha</p>
+        <h1 class="hero-lines mt-8">
+          <span class="block">Znám skutečné ceny.</span>
+          <span class="block">Připravím nemovitost.</span>
+          <span class="block">Prodám <span class="mark-oval">za víc.<svg viewBox="0 0 300 90" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M14 50 C10 22 92 6 162 8 C240 10 292 26 288 50 C284 74 202 86 130 84 C58 82 18 72 14 52 C12 42 22 34 36 31" /></svg></span></span>
+        </h1>
+        <p class="measure mt-8 text-[1.05rem] leading-relaxed text-ink-soft sm:text-lg">
+          Byty, domy a pozemky na Vyškovsku, v Brně a v Praze. Prodej bez zbytečné slevy a bez starostí – od první schůzky po předání klíčů.
+        </p>
+        <div class="mt-9 flex flex-wrap gap-3">
+          <a href="/oceneni-nemovitosti-zdarma/" class="btn btn-primary rounded-none px-6 text-[11px] font-medium uppercase tracking-[0.16em]">Ocenění zdarma</a>
+          <a href="/nemovitosti/" class="btn-ghost btn-ghost-dark">Aktuální nabídka</a>
+        </div>
+      </div>
+
+      <div class="relative self-end lg:col-span-5 lg:col-start-8 lg:row-span-2">
+        <!-- oblouk za makléřem navazuje na šedou lištu pod hero -->
+        <div class="absolute inset-x-[6%] bottom-0 top-[18%] rounded-t-full bg-beton" aria-hidden="true"></div>
+        <figure class="relative mx-auto w-[78%] max-w-[420px] lg:mx-0 lg:w-full lg:max-w-[500px]">
+          <Image
+            src={heroCut}
+            alt={b.name}
+            width={1168}
+            height={1908}
+            widths={[480, 720, 1000]}
+            sizes="(min-width:1024px) 500px, 78vw"
+            format="webp"
+            quality={82}
+            loading="eager"
+            fetchpriority="high"
+            class="block w-full"
+          />
+          <figcaption class="absolute bottom-6 left-0 border border-line bg-paper px-4 py-3 text-ink lg:-left-8">
+            <p class="font-serif text-lg font-medium leading-tight" style="font-variation-settings:'opsz' 24">{b.name}</p>
+            <p class="eyebrow mt-1">{b.role}</p>
+          </figcaption>
+        </figure>
+      </div>
+
+      <!-- čísla: na mobilu až pod fotografií, na desktopu pod textem v levém sloupci -->
+      <dl class="flex flex-wrap gap-x-10 gap-y-4 border-t border-line py-6 lg:col-span-7 lg:col-start-1 lg:row-start-2 lg:mt-0 lg:pb-24 lg:pt-6">
+        <div><dd class="num font-serif text-2xl font-medium" style="font-variation-settings:'opsz' 32">{b.valuationsDone.toLocaleString('cs-CZ')}+</dd><dt class="eyebrow mt-1">Ocenění</dt></div>
+        <div><dd class="num font-serif text-2xl font-medium" style="font-variation-settings:'opsz' 32">{b.yearsOnMarket} let</dd><dt class="eyebrow mt-1">Na trhu</dt></div>
+        <div><dd class="num font-serif text-2xl font-medium" style="font-variation-settings:'opsz' 32">až 20 %</dd><dt class="eyebrow mt-1">Vyšší cena</dt></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- LIŠTA OCENĚNÍ + kde inzerujeme -->
+  <section class="border-b border-line bg-beton">
+    <div class="container-x py-10 lg:py-12">
+      <ValuationForm variant="bar" />
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8">
+        <p class="eyebrow shrink-0">Nemovitosti inzerujeme na</p>
+        <!-- TODO ostrý web: nahradit skutečnými logy portálů (SVG, mono šedá) -->
+        <ul class="flex flex-wrap items-center gap-x-8 gap-y-2 font-serif text-lg font-medium text-mute" style="font-variation-settings:'opsz' 24" aria-label="Realitní portály">
+          <li>Sreality.cz</li><li>Reality.iDNES.cz</li><li>Bezrealitky</li><li>RealityMix</li><li>Facebook</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- AKTUÁLNÍ NABÍDKA -->
+  <section>
+    <div class="container-x py-20 lg:py-24">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="eyebrow">Aktuální nabídka</p>
+          <h2 class="mt-3">Právě v nabídce</h2>
+        </div>
+        <a href="/nemovitosti/" class="eyebrow underline decoration-line underline-offset-[6px] hover:text-ink">{active.length} nemovitostí v nabídce</a>
+      </div>
+      <div class="mt-10 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+        {featured.map((n) => <PropertyCard item={n} />)}
+      </div>
+      <div class="mt-12 text-center">
+        <a href="/nemovitosti/" class="btn-ghost btn-ghost-dark">Celá nabídka a filtry</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- JAK PRODÁVÁME – tři kroky se čtvercovými fotografiemi -->
+  <section class="bg-beton">
+    <div class="container-x py-20 lg:py-24">
+      <div class="grid gap-6 lg:grid-cols-12 lg:items-end">
+        <div class="lg:col-span-8">
+          <p class="eyebrow">Jak prodávám</p>
+          <h2 class="mt-3">Většina makléřů nemovitost nafotí a vloží do inzerce. Já ji nejdřív ocením a připravím.</h2>
+        </div>
+        <div class="lg:col-span-4 lg:text-right">
+          <a href="/jak-prodavame/" class="btn-ghost btn-ghost-dark">Jak prodej probíhá</a>
+        </div>
+      </div>
+      <ol class="mt-12 grid gap-8 sm:grid-cols-3">
+        {pilire.map((p) => (
+          <li>
+            <p class="eyebrow">{p.num}/ {p.title}</p>
+            <Image src={p.img} alt="" width={700} height={700} widths={[400, 700, 1000]} sizes="(min-width:1024px) 380px, (min-width:640px) 30vw, 90vw" format="webp" quality={76} loading="lazy" class="mt-3 aspect-square w-full object-cover" />
+            <p class="mt-4 text-[0.95rem] leading-relaxed text-ink-soft">{p.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- METODA + KDO JE MAKLÉŘ – tmavý blok s grafem -->
+  <section class="bg-ink text-white">
+    <div class="container-x grid items-center gap-12 py-20 lg:grid-cols-12 lg:py-24">
+      <div class="lg:col-span-5">
+        <p class="eyebrow-light">Metoda</p>
+        <h2 class="mt-4 text-white">Inzeráty lžou. Katastr ne.</h2>
+        <p class="measure mt-6 text-[1.05rem] leading-relaxed text-white/75">
+          Nabídkové ceny v inzerci jsou přání prodávajících. Já pracuji s cenami, za které se nemovitosti opravdu prodaly – z katastru a z vlastních obchodů. Než jsem začal prodávat, roky jsem nemovitosti oceňoval pro banky, dědická řízení i majitele, kteří jen chtěli vědět, na čem jsou.
+        </p>
+        <div class="mt-8 flex items-center gap-4 border-t border-white/15 pt-6">
+          <Image src={heroMakler} alt="" width={112} height={112} format="webp" quality={80} loading="lazy" class="h-14 w-14 rounded-full object-cover object-top" />
+          <div>
+            <p class="font-serif text-lg font-medium leading-tight" style="font-variation-settings:'opsz' 24">{b.name}</p>
+            <p class="mt-1 text-sm text-white/60">Dřív odhadce pro banky, dnes makléř. <a href="/o-nas/" class="text-white underline decoration-white/40 underline-offset-4 hover:decoration-white">Příběh</a></p>
+          </div>
+        </div>
+      </div>
+      <div class="lg:col-span-7">
+        <PriceChart dark />
+      </div>
+    </div>
+  </section>
+
+  <!-- REFERENCE -->
+  <section class="container-x py-20 lg:py-24">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Reference</p>
+        <h2 class="mt-3">Co říkají lidé, kterým jsem prodal</h2>
+      </div>
+      <a href="/reference/" class="eyebrow underline decoration-line underline-offset-[6px] hover:text-ink">Všechny reference</a>
+    </div>
+    <Testimonials class="mt-10" />
+  </section>
+
+  <!-- ANALÝZY -->
+  <section class="bg-beton">
+    <div class="container-x py-16 lg:py-20">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="eyebrow">Analýzy trhu</p>
+          <h2 class="mt-3">Z reálných prodejů, ne z tiskových zpráv</h2>
+        </div>
+        <a href="/analyzy/" class="eyebrow underline decoration-line underline-offset-[6px] hover:text-ink">Všechny analýzy</a>
+      </div>
+      <ul class="mt-10 grid gap-8 md:grid-cols-3">
+        {analyzy.map((a) => (
+          <li class="border-t border-ink/20 pt-5">
+            <p class="eyebrow">{formatDatum(a.data.datum)}{a.data.lokalita ? ` · ${a.data.lokalita}` : ''}</p>
+            <h3 class="mt-3"><a href={`/analyzy/${a.id}/`} class="hover:text-wine">{a.data.title}</a></h3>
+            <p class="mt-2 text-[0.95rem] leading-relaxed text-ink-soft">{a.data.perex}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand title="Nejdřív jen zjistit, na čem jste?" text="Ocenění je zdarma a k ničemu nezavazuje. Nebo rovnou zavolejte – na začátku stačí patnáct minut." />
+</Base>

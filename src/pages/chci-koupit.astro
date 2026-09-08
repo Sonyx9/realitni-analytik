@@ -1,0 +1,22 @@
+---
+import Base from '@/layouts/Base.astro';
+import LeadForm from '@/components/LeadForm.astro';
+---
+<Base title="Hledám nemovitost – poptávka" description="Řekněte nám, jakou nemovitost hledáte ve Vyškově, v Brně nebo v Praze. Ozveme se, jakmile budeme mít odpovídající nabídku – často před zveřejněním.">
+  <section class="container-x grid gap-12 py-14 lg:grid-cols-12 lg:py-20">
+    <div class="lg:col-span-5">
+      <h1>Hledám nemovitost</h1>
+      <p class="mt-4 text-lg leading-relaxed text-ink-soft">Většina nemovitostí, které prodáváme, má kupce dřív, než se dostane do inzerce – z naší databáze poptávek. Napište, co hledáte, a ozveme se, jakmile to budeme mít.</p>
+      <ul class="mt-8 space-y-3 text-[1.02rem] text-ink-soft">
+        <li>Nabídku dostanete e-mailem nebo telefonem, ne newsletterem.</li>
+        <li>Poptávku můžete kdykoli zrušit jednou větou.</li>
+        <li>Nic vás to nestojí – provizi hradí prodávající.</li>
+      </ul>
+    </div>
+    <div class="lg:col-span-7 lg:pl-6">
+      <div class="rounded-md border border-line p-6 sm:p-8">
+        <LeadForm formId="koupe" submitLabel="Odeslat poptávku" messageLabel="Co hledáte" messagePlaceholder="např. byt 3+kk ve Vyškově do 5 mil. Kč, nebo dům se zahradou do 20 km od Brna" />
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,60 @@
+---
+/**
+ * Minimální cookie lišta. Výchozí stav = odmítnuto (Consent Mode v2 "denied").
+ * Po "Povolit" se nastaví souhlas a načte GTM. ID kontejneru doplní programátor.
+ */
+const GTM_ID = 'GTM-XXXXXXX'; // TODO
+---
+<div
+  id="cookie-bar"
+  hidden
+  role="region"
+  aria-label="Nastavení cookies"
+  class="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-xl rounded-md border border-line bg-paper p-5 shadow-panel"
+>
+  <p class="text-[0.95rem] leading-relaxed">
+    Používáme technické cookies pro chod webu. Analytické a marketingové cookies zapneme jen s vaším souhlasem –
+    pomáhají nám zjistit, které stránky lidem pomáhají. <a href="/cookies/" class="underline underline-offset-2">Podrobnosti</a>
+  </p>
+  <div class="mt-4 flex flex-wrap gap-3">
+    <button type="button" class="btn btn-ink" data-consent="granted">Povolit vše</button>
+    <button type="button" class="btn btn-outline" data-consent="denied">Jen nezbytné</button>
+  </div>
+</div>
+
+<script is:inline define:vars={{ GTM_ID }}>
+  (function () {
+    const KEY = 'ra-consent';
+    const bar = document.getElementById('cookie-bar');
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { window.dataLayer.push(arguments); }
+    gtag('consent', 'default', {
+      ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
+      analytics_storage: 'denied', wait_for_update: 500,
+    });
+    function loadGtm() {
+      if (!GTM_ID || GTM_ID.includes('XXXX') || document.getElementById('gtm-js')) return;
+      const s = document.createElement('script');
+      s.id = 'gtm-js'; s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtm.js?id=' + GTM_ID;
+      document.head.appendChild(s);
+      window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+    }
+    function apply(state) {
+      const v = state === 'granted' ? 'granted' : 'denied';
+      gtag('consent', 'update', { ad_storage: v, ad_user_data: v, ad_personalization: v, analytics_storage: v });
+      if (v === 'granted') loadGtm();
+    }
+    let saved = null;
+    try { saved = localStorage.getItem(KEY); } catch (e) {}
+    if (saved) { apply(saved); } else if (bar) { bar.hidden = false; }
+    bar?.querySelectorAll('[data-consent]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const v = b.getAttribute('data-consent');
+        try { localStorage.setItem(KEY, v); } catch (e) {}
+        apply(v);
+        bar.hidden = true;
+      })
+    );
+  })();
+</script>

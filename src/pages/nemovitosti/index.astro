@@ -1,0 +1,153 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import PropertyCard from '@/components/PropertyCard.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import { sortNemovitosti, TYP_LABEL } from '@/lib/format';
+
+const all = sortNemovitosti(await getCollection('nemovitosti'));
+const aktivni = all.filter((n) => n.data.status === 'aktivni' || n.data.status === 'rezervovano');
+const prodane = all.filter((n) => n.data.status === 'prodano' || n.data.status === 'pronajato');
+
+const typyCount = Object.entries(TYP_LABEL)
+  .map(([key, label]) => ({ key, label, count: aktivni.filter((n) => n.data.typ === key).length }))
+  .filter((t) => t.count > 0);
+const kraje = [...new Set(aktivni.map((n) => n.data.lokalita.kraj))];
+const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
+---
+<Base
+  title="Nemovitosti na prodej – Vyškov, Brno, Praha"
+  description="Aktuální nabídka bytů, domů a pozemků, které prodáváme ve Vyškově, na jižní Moravě a v Praze. Poctivé popisy, ceny podložené daty."
+>
+  <section class="container-x pt-14 pb-8">
+    <h1>Co právě prodáváme</h1>
+    <p class="measure mt-4 text-lg text-ink-soft">
+      Nabídka je záměrně malá. Každou nemovitost oceňujeme z realizovaných prodejů, připravujeme a popisujeme sami – včetně toho, co jinde nenajdete.
+    </p>
+  </section>
+
+  <section class="container-x" aria-label="Filtr nemovitostí">
+    <div class="flex flex-col gap-4 border-y border-line py-4 lg:flex-row lg:items-center lg:justify-between" data-filters>
+      <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Typ nemovitosti">
+        <button type="button" class="chip" data-filter="typ" data-value="" aria-pressed="true">Vše ({aktivni.length})</button>
+        {typyCount.map((t) => (
+          <button type="button" class="chip" data-filter="typ" data-value={t.key} aria-pressed="false">{t.label} ({t.count})</button>
+        ))}
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        {maPronajem && (
+          <div class="flex gap-2" role="group" aria-label="Prodej nebo pronájem">
+            <button type="button" class="chip" data-filter="nabidka" data-value="" aria-pressed="true">Prodej i pronájem</button>
+            <button type="button" class="chip" data-filter="nabidka" data-value="prodej" aria-pressed="false">Prodej</button>
+            <button type="button" class="chip" data-filter="nabidka" data-value="pronajem" aria-pressed="false">Pronájem</button>
+          </div>
+        )}
+        <label class="flex items-center gap-2 text-sm">
+          <span class="text-mute">Oblast</span>
+          <select class="field w-auto py-2 text-sm" data-filter-select="kraj">
+            <option value="">všechny</option>
+            {kraje.map((k) => <option value={k}>{k}</option>)}
+          </select>
+        </label>
+        <label class="flex items-center gap-2 text-sm">
+          <span class="text-mute">Řadit</span>
+          <select class="field w-auto py-2 text-sm" data-sort>
+            <option value="datum-desc">nejnovější</option>
+            <option value="cena-asc">cena od nejnižší</option>
+            <option value="cena-desc">cena od nejvyšší</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="container-x py-10">
+    <p class="sr-only" aria-live="polite" data-result-count></p>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-grid>
+      {aktivni.map((n, i) => <PropertyCard item={n} eager={i < 3} />)}
+    </div>
+    <div hidden data-empty class="rounded-md border border-dashed border-line px-6 py-14 text-center">
+      <p class="text-lg font-medium">Tomuto výběru zatím nic neodpovídá.</p>
+      <p class="mt-2 text-ink-soft">Napište nám, co hledáte – většina nemovitostí se prodá dřív, než se dostane do inzerce.</p>
+      <a href="/chci-koupit/" class="btn btn-ink mt-6">Hledám nemovitost</a>
+    </div>
+  </section>
+
+  {prodane.length > 0 && (
+    <section class="container-x pb-16">
+      <h2 class="text-2xl">Nedávno prodáno</h2>
+      <p class="mt-2 text-ink-soft">Pro představu, co a kde jsme prodali. U prodaných nemovitostí rádi sdělíme, jak dlouho prodej trval a jak se lišila výsledná cena od odhadu.</p>
+      <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {prodane.slice(0, 6).map((n) => <PropertyCard item={n} />)}
+      </div>
+    </section>
+  )}
+
+  <section class="bg-beton">
+    <div class="container-x grid items-center gap-8 py-14 md:grid-cols-12">
+      <div class="md:col-span-8">
+        <h2 class="text-2xl">Hledáte něco, co v nabídce není?</h2>
+        <p class="mt-2 text-ink-soft">Řekněte nám, co hledáte a kde. Ozveme se, jakmile budeme mít odpovídající nemovitost – často ještě před zveřejněním.</p>
+      </div>
+      <div class="md:col-span-4 md:text-right">
+        <a href="/chci-koupit/" class="btn btn-ink">Zadat, co hledám</a>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand title="Prodáváte? Začněte cenou." text="Než dáte nemovitost do inzerce, zjistěte z realizovaných prodejů, za kolik se skutečně prodá." />
+</Base>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-filters]');
+  const grid = document.querySelector<HTMLElement>('[data-grid]');
+  const empty = document.querySelector<HTMLElement>('[data-empty]');
+  const count = document.querySelector<HTMLElement>('[data-result-count]');
+  if (root && grid) {
+    const state: Record<string, string> = { typ: '', nabidka: '', kraj: '' };
+    const params = new URLSearchParams(location.search);
+    for (const k of Object.keys(state)) state[k] = params.get(k) ?? '';
+    let sort = params.get('sort') ?? 'datum-desc';
+
+    const cards = () => [...grid.querySelectorAll<HTMLElement>('article')];
+
+    function apply() {
+      let visible = 0;
+      for (const c of cards()) {
+        const ok = Object.entries(state).every(([k, v]) => !v || c.dataset[k] === v);
+        c.hidden = !ok;
+        if (ok) visible++;
+      }
+      const list = cards().filter((c) => !c.hidden);
+      list.sort((a, b) => {
+        if (sort === 'datum-desc') return b.dataset.datum!.localeCompare(a.dataset.datum!);
+        const ca = a.dataset.cena ? Number(a.dataset.cena) : Infinity;
+        const cb = b.dataset.cena ? Number(b.dataset.cena) : Infinity;
+        return sort === 'cena-asc' ? ca - cb : cb - ca;
+      });
+      list.forEach((c) => grid.appendChild(c));
+      if (empty) empty.hidden = visible > 0;
+      if (count) count.textContent = `Zobrazeno ${visible} nemovitostí`;
+      // stav do URL (sdílení filtru, zpět v historii)
+      const q = new URLSearchParams();
+      for (const [k, v] of Object.entries(state)) if (v) q.set(k, v);
+      if (sort !== 'datum-desc') q.set('sort', sort);
+      history.replaceState(null, '', q.toString() ? `?${q}` : location.pathname);
+      // aktivní chipy
+      root!.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((b) => {
+        b.setAttribute('aria-pressed', String(state[b.dataset.filter!] === b.dataset.value));
+      });
+    }
+
+    root.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((b) =>
+      b.addEventListener('click', () => { state[b.dataset.filter!] = b.dataset.value!; apply(); })
+    );
+    root.querySelectorAll<HTMLSelectElement>('[data-filter-select]').forEach((s) => {
+      s.value = state[s.dataset.filterSelect!] ?? '';
+      s.addEventListener('change', () => { state[s.dataset.filterSelect!] = s.value; apply(); });
+    });
+    const sortEl = root.querySelector<HTMLSelectElement>('[data-sort]');
+    if (sortEl) { sortEl.value = sort; sortEl.addEventListener('change', () => { sort = sortEl.value; apply(); }); }
+    apply();
+  }
+</script>

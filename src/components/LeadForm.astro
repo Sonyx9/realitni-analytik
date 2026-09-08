@@ -1,0 +1,71 @@
+---
+/** Krátký kontaktní / poptávkový formulář (detail nemovitosti, kontakt, chci koupit). */
+import { site } from '@/data/site';
+interface Props {
+  formId: string; // "zajem" | "kontakt" | "koupe"
+  subject?: string; // např. název nemovitosti
+  submitLabel?: string;
+  messageLabel?: string;
+  messagePlaceholder?: string;
+  compact?: boolean;
+  class?: string;
+}
+const {
+  formId, subject, submitLabel = 'Odeslat zprávu', messageLabel = 'Zpráva',
+  messagePlaceholder = '', compact = false, class: cls = '',
+} = Astro.props;
+const uid = `lf-${formId}-${Math.random().toString(36).slice(2, 7)}`;
+---
+<form action={site.formEndpoint} method="post" class:list={['grid gap-4', cls]} data-lead-form novalidate>
+  <input type="hidden" name="form" value={formId} />
+  {subject && <input type="hidden" name="predmet" value={subject} />}
+  <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+  <div class:list={['grid gap-4', { 'sm:grid-cols-2': !compact }]}>
+    <div>
+      <label for={`${uid}-jmeno`} class="label">Jméno a příjmení</label>
+      <input id={`${uid}-jmeno`} name="jmeno" type="text" class="field" autocomplete="name" required />
+    </div>
+    <div>
+      <label for={`${uid}-tel`} class="label">Telefon</label>
+      <input id={`${uid}-tel`} name="telefon" type="tel" class="field" autocomplete="tel" required />
+    </div>
+    <div class:list={{ 'sm:col-span-2': !compact }}>
+      <label for={`${uid}-email`} class="label">E-mail</label>
+      <input id={`${uid}-email`} name="email" type="email" class="field" autocomplete="email" required />
+    </div>
+  </div>
+  <div>
+    <label for={`${uid}-zprava`} class="label">{messageLabel}</label>
+    <textarea id={`${uid}-zprava`} name="zprava" rows={compact ? 3 : 4} class="field" placeholder={messagePlaceholder}></textarea>
+  </div>
+  <label class="flex items-start gap-3 text-sm text-ink-soft">
+    <input type="checkbox" name="souhlas" required class="mt-1 h-4 w-4 accent-wine" />
+    <span>Souhlasím se zpracováním údajů za účelem vyřízení dotazu. <a href="/ochrana-osobnich-udaju/" class="underline">Podrobnosti</a></span>
+  </label>
+  <button type="submit" class="btn btn-primary">{submitLabel}</button>
+  <p data-form-error hidden class="rounded-sm bg-wine-tint px-4 py-3 text-sm text-wine-deep" role="alert"></p>
+</form>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('[data-lead-form]').forEach((form) => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+      const err = form.querySelector<HTMLElement>('[data-form-error]')!;
+      const btn = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+      const label = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Odesílám…';
+      try {
+        const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+        if (!res.ok) throw new Error(String(res.status));
+        const id = (form.elements.namedItem('form') as HTMLInputElement).value;
+        window.dataLayer?.push({ event: `lead_${id}` });
+        location.href = `/dekujeme/?typ=${id}`;
+      } catch {
+        err.hidden = false;
+        err.textContent = 'Odeslání se nepodařilo. Zkuste to znovu, nebo nám rovnou zavolejte.';
+        btn.disabled = false; btn.textContent = label;
+      }
+    });
+  });
+</script>

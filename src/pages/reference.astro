@@ -1,0 +1,36 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import { formatDatum } from '@/lib/format';
+import { site } from '@/data/site';
+const refs = (await getCollection('reference')).sort((a, b) => b.data.datum.getTime() - a.data.datum.getTime());
+const items = await Promise.all(refs.map(async (r) => ({ r, Content: (await render(r)).Content })));
+const avg = refs.length ? (refs.reduce((s, r) => s + r.data.hodnoceni, 0) / refs.length).toFixed(1) : '5.0';
+---
+<Base title="Reference klientů" description="Co říkají lidé, kterým jsme prodali nebo ocenili nemovitost ve Vyškově, v Brně a v Praze.">
+  <section class="container-x py-14 lg:py-20">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div class="max-w-2xl">
+        <h1>Reference</h1>
+        <p class="mt-4 text-lg text-ink-soft">Neupravené. Kde je to možné, odkazujeme na původní recenzi na Googlu.</p>
+      </div>
+      <div class="text-right">
+        <p class="num text-3xl font-semibold">{avg} <span class="text-wine">★</span></p>
+        <p class="text-sm text-mute">{refs.length} hodnocení{site.googleReviews ? ' · ' : ''}{site.googleReviews && <a href={site.googleReviews} target="_blank" rel="noopener" class="underline">Google</a>}</p>
+      </div>
+    </div>
+    <ul class="mt-12 grid gap-6 md:grid-cols-2">
+      {items.map(({ r, Content }) => (
+        <li class="rounded-md bg-beton p-7">
+          <div class="text-[1.05rem] leading-relaxed [&_p]:m-0"><Content /></div>
+          <footer class="mt-5 flex items-center justify-between text-sm">
+            <div><span class="font-semibold">{r.data.jmeno}</span><span class="text-mute"> · {r.data.misto}{r.data.typ ? `, ${r.data.typ}` : ''} · {formatDatum(r.data.datum)}</span></div>
+            <span class="text-mute" aria-label={`Hodnocení ${r.data.hodnoceni} z 5`}>{'★'.repeat(r.data.hodnoceni)}</span>
+          </footer>
+        </li>
+      ))}
+    </ul>
+  </section>
+  <CtaBand />
+</Base>

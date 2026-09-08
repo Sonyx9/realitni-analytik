@@ -1,0 +1,15 @@
+---
+/** Proces prodeje – skutečná sekvence, proto číslování. */
+interface Step { title: string; text: string }
+interface Props { steps: Step[]; class?: string }
+const { steps, class: cls = '' } = Astro.props;
+---
+<ol class:list={['grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-4', cls]}>
+  {steps.map((s, i) => (
+    <li class="relative border-t-2 border-ink pt-5">
+      <span class="font-serif text-4xl font-medium text-wine" style="font-variation-settings:'opsz' 48">{i + 1}</span>
+      <h3 class="mt-3 font-sans text-lg font-semibold tracking-normal">{s.title}</h3>
+      <p class="mt-2 text-[0.95rem] leading-relaxed text-ink-soft">{s.text}</p>
+    </li>
+  ))}
+</ol>

@@ -1,0 +1,69 @@
+---
+import Base from '@/layouts/Base.astro';
+import Steps from '@/components/Steps.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import Faq from '@/components/Faq.astro';
+
+const steps = [
+  { title: 'Ocenění z dat', text: 'Cena z realizovaných prodejů v okolí, s podklady. Dohodneme strategii: rychlost, nebo maximální cena.' },
+  { title: 'Příprava nemovitosti', text: 'Prověříme dokumenty na katastru i stavebním úřadě, opravíme drobné vady, vymalujeme, uklidíme, nastavíme interiér.' },
+  { title: 'Prezentace a inzerce', text: 'Fotograf, půdorysy, dron, video. Inzerce na všech relevantních portálech, sociální sítě, naše databáze zájemců.' },
+  { title: 'Prohlídky a vyjednávání', text: 'Prohlídky vedeme my, i o víkendu. Zájemce prověříme, vyjednáme nejlepší podmínky a průběžně vám reportujeme.' },
+  { title: 'Smlouvy a úschova', text: 'Rezervační a kupní smlouvu připraví spolupracující advokát. Kupní cena jde do advokátní nebo bankovní úschovy.' },
+  { title: 'Převod a předání', text: 'Vklad na katastr, přepis energií, předávací protokol. Končíme až v okamžiku, kdy máte peníze na účtu.' },
+];
+const priprava = [
+  ['Prověření dokumentace', 'Katastr, stavební úřad, věcná břemena, zástavy. Aby vás při prodeji nic nepřekvapilo.'],
+  ['Drobné opravy', 'Kapající kohoutek, nedovírající okno, uvolněná dlaždice. Kupující je vidí a odečítá si je z ceny – násobně.'],
+  ['Vymalování a úklid', 'Čisté stěny a uklizený dům jsou nejlevnější způsob, jak zvýšit cenu. Zařídíme včetně řemeslníků.'],
+  ['Nastavení interiéru', 'Uspořádáme nábytek a doplňky tak, aby prostor působil větší a světlejší. Fotky pak prodávají samy.'],
+  ['Fotografie, půdorysy, dron', 'Profesionální fotograf, zakreslené půdorysy s výměrami, u domů a pozemků záběry z dronu.'],
+  ['Inzerce a oslovení zájemců', 'Sreality, Reality.iDNES, Bezrealitky, sociální sítě a naše databáze lidí, kteří hledají právě takovou nemovitost.'],
+];
+const faq = [
+  { q: 'Kolik stojí vaše služby?', a: 'Provize je smluvní a závisí na typu a ceně nemovitosti; řekneme vám ji na první schůzce, nikdy až „potom“. V provizi je vše: příprava, fotograf, inzerce, právní servis i úschova. Žádné další poplatky.' },
+  { q: 'Musím podepsat exkluzivní smlouvu?', a: 'Pracujeme na základě smlouvy o zprostředkování, obvykle na 3–6 měsíců. Neexkluzivní prodej ve výsledku škodí ceně – stejná nemovitost u více makléřů působí na kupující jako problémová.' },
+  { q: 'Co když se nemovitost neprodá?', a: 'Pokud je cena stanovená z dat, prodá se. Kdyby se trh změnil, zavčas to uvidíme v číslech a společně upravíme strategii. Neplatíte nic, dokud není prodáno.' },
+  { q: 'Působíte i mimo Vyškov?', a: 'Ano – Vyškovsko a Brno jsou domácí trh, pravidelně prodáváme i v Praze. Jinde v ČR po dohodě, pokud to dává smysl pro vás i pro nás.' },
+];
+const faqLd = { '@type': 'FAQPage', mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
+---
+<Base
+  title="Jak prodáváme nemovitosti – od ocenění po předání klíčů"
+  description="Šest kroků prodeje nemovitosti s Realitním analytikem: ocenění z dat, příprava nemovitosti, profesionální prezentace, prohlídky, právní servis s úschovou a předání."
+  jsonLd={[faqLd]}
+>
+  <section class="container-x py-14 lg:py-20">
+    <div class="max-w-3xl">
+      <h1>Jak prodáváme</h1>
+      <p class="mt-5 text-lg leading-relaxed text-ink-soft">
+        Prodej nemovitosti není inzerát. Je to cena, příprava, prezentace a vyjednávání. Každý z těchto kroků umí přidat nebo ubrat statisíce – proto je děláme všechny a děláme je sami.
+      </p>
+    </div>
+    <Steps steps={steps} class="mt-14 lg:grid-cols-3" />
+  </section>
+
+  <section class="bg-beton">
+    <div class="container-x py-20">
+      <div class="max-w-2xl">
+        <h2>Co všechno zařídíme, než začneme prodávat</h2>
+        <p class="mt-4 text-lg text-ink-soft">Dobrý dojem uděláte jen jednou. Proto nemovitost před inzercí dáváme do stavu, ve kterém ji chce kupující vidět.</p>
+      </div>
+      <ul class="mt-12 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+        {priprava.map(([t, x]) => (
+          <li>
+            <h3 class="font-sans text-lg font-semibold tracking-normal">{t}</h3>
+            <p class="mt-2 text-[0.95rem] leading-relaxed text-ink-soft">{x}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="container-x grid gap-10 py-20 lg:grid-cols-12">
+    <div class="lg:col-span-4"><h2>Na co se lidé ptají</h2></div>
+    <div class="lg:col-span-8"><Faq items={faq} /></div>
+  </section>
+
+  <CtaBand />
+</Base>

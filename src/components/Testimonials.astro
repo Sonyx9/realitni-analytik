@@ -1,0 +1,25 @@
+---
+import { getCollection, render } from 'astro:content';
+interface Props { limit?: number; class?: string }
+const { limit = 3, class: cls = '' } = Astro.props;
+const refs = (await getCollection('reference')).sort((a, b) => b.data.datum.getTime() - a.data.datum.getTime()).slice(0, limit);
+const rendered = await Promise.all(refs.map(async (r) => ({ r, body: (await render(r)).Content })));
+---
+<ul class:list={['grid gap-6 md:grid-cols-3', cls]}>
+  {rendered.map(({ r, body: Content }) => (
+    <li class="flex flex-col border border-line bg-paper p-7">
+      <div class="text-[1.05rem] leading-relaxed text-ink [&_p]:m-0">
+        <Content />
+      </div>
+      <footer class="mt-5 flex items-center justify-between gap-4 text-sm">
+        <div>
+          <span class="font-semibold text-ink">{r.data.jmeno}</span>
+          <span class="text-mute"> · {r.data.misto}{r.data.typ ? `, ${r.data.typ}` : ''}</span>
+        </div>
+        <span class="whitespace-nowrap text-mute" aria-label={`Hodnocení ${r.data.hodnoceni} z 5`}>
+          {'★'.repeat(r.data.hodnoceni)}
+        </span>
+      </footer>
+    </li>
+  ))}
+</ul>

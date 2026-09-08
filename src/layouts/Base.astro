@@ -1,0 +1,72 @@
+---
+import '@/styles/global.css';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import CookieBar from '@/components/CookieBar.astro';
+import { site } from '@/data/site';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Absolutní nebo kořenová cesta k OG obrázku */
+  ogImage?: string;
+  /** Přidané JSON-LD objekty (RealEstateListing, FAQPage…) */
+  jsonLd?: Record<string, unknown>[];
+  noindex?: boolean;
+  bodyClass?: string;
+}
+
+const { title, description, ogImage = '/og-default.jpg', jsonLd = [], noindex = false, bodyClass = '' } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const fullTitle = title.includes(site.name) ? title : `${title} | ${site.name}`;
+const ogAbs = new URL(ogImage, Astro.site).toString();
+
+const orgLd = {
+  '@context': 'https://schema.org',
+  '@type': 'RealEstateAgent',
+  name: site.name,
+  url: site.url,
+  image: new URL(site.broker.photo, Astro.site).toString(),
+  telephone: site.broker.phone,
+  email: site.broker.email,
+  founder: { '@type': 'Person', name: site.broker.name },
+  areaServed: site.broker.regions.map((r) => ({ '@type': 'Place', name: r })),
+  address: { '@type': 'PostalAddress', addressLocality: 'Vyškov', addressCountry: 'CZ' },
+  sameAs: [site.sreality, site.social.facebook, site.social.instagram, site.social.linkedin].filter(Boolean),
+};
+---
+
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${site.name} – analýzy trhu`} href="/analyzy/rss.xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content={site.locale} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogAbs} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#1f2933" />
+    <script type="application/ld+json" set:html={JSON.stringify(orgLd)} />
+    {jsonLd.map((obj) => <script type="application/ld+json" set:html={JSON.stringify({ '@context': 'https://schema.org', ...obj })} />)}
+    <!-- GTM / GA4 se vkládá až po souhlasu – viz CookieBar.astro a zadání (Consent Mode v2) -->
+  </head>
+  <body class={`flex min-h-screen flex-col ${bodyClass}`}>
+    <a href="#obsah" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-sm focus:bg-ink focus:px-4 focus:py-2 focus:text-white">Přeskočit na obsah</a>
+    <Header />
+    <main id="obsah" class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+    <CookieBar />
+  </body>
+</html>

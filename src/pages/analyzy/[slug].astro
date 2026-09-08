@@ -1,0 +1,33 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import { formatDatum } from '@/lib/format';
+import { site } from '@/data/site';
+export async function getStaticPaths() {
+  const posts = await getCollection('analyzy');
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+const { post } = Astro.props;
+const { Content } = await render(post);
+const ld = {
+  '@type': 'Article',
+  headline: post.data.title,
+  description: post.data.perex,
+  datePublished: post.data.datum.toISOString(),
+  author: { '@type': 'Person', name: site.broker.name },
+  publisher: { '@type': 'Organization', name: site.name },
+};
+---
+<Base title={post.data.title} description={post.data.perex} jsonLd={[ld]}>
+  <article class="container-x py-14 lg:py-20">
+    <div class="mx-auto max-w-3xl">
+      <a href="/analyzy/" class="text-sm text-mute hover:text-ink hover:underline">Analýzy trhu</a>
+      <h1 class="mt-4">{post.data.title}</h1>
+      <p class="mt-4 text-mute">{formatDatum(post.data.datum)} · {site.broker.name}{post.data.lokalita ? ` · ${post.data.lokalita}` : ''}</p>
+      <p class="mt-6 text-xl leading-relaxed text-ink-soft">{post.data.perex}</p>
+      <div class="prose-ra mt-8 text-[1.1rem] leading-relaxed"><Content /></div>
+    </div>
+  </article>
+  <CtaBand />
+</Base>

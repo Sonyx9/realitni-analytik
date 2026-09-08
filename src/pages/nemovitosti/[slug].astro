@@ -1,0 +1,271 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image, getImage } from 'astro:assets';
+import Base from '@/layouts/Base.astro';
+import LeadForm from '@/components/LeadForm.astro';
+import BrokerCard from '@/components/BrokerCard.astro';
+import PropertyCard from '@/components/PropertyCard.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import { formatCena, formatPlocha, STATUS_LABEL, TYP_LABEL, VLASTNICTVI_LABEL, sortNemovitosti, formatDatum } from '@/lib/format';
+import { site } from '@/data/site';
+
+export async function getStaticPaths() {
+  const items = await getCollection('nemovitosti');
+  return items.map((item) => ({ params: { slug: item.id }, props: { item } }));
+}
+const { item } = Astro.props;
+const d = item.data;
+const { Content } = await render(item);
+const inactive = d.status === 'prodano' || d.status === 'pronajato';
+
+const similar = sortNemovitosti(await getCollection('nemovitosti'))
+  .filter((n) => n.id !== item.id && n.data.status === 'aktivni')
+  .sort((a, b) => (a.data.typ === d.typ ? -1 : 0) - (b.data.typ === d.typ ? -1 : 0))
+  .slice(0, 3);
+
+const og = await getImage({ src: d.obrazky[0], width: 1200, height: 630, format: 'jpeg', quality: 80 });
+const alts = d.obrazkyAlt ?? [];
+const fulls = await Promise.all(d.obrazky.map((img) => getImage({ src: img, width: 1600, format: 'webp', quality: 80 })));
+
+const facts = [
+  d.dispozice && { label: 'Dispozice', value: d.dispozice },
+  d.plocha && { label: 'Užitná plocha', value: formatPlocha(d.plocha) },
+  d.plochaPozemku && { label: 'Pozemek', value: formatPlocha(d.plochaPozemku) },
+  d.stav && { label: 'Stav', value: d.stav },
+  d.energetickaTrida && { label: 'Energetická třída', value: d.energetickaTrida },
+].filter(Boolean) as { label: string; value: string }[];
+
+const params = [
+  { label: 'Typ', value: TYP_LABEL[d.typ] },
+  { label: 'Nabídka', value: d.nabidka === 'prodej' ? 'prodej' : 'pronájem' },
+  d.podlazi !== undefined && { label: 'Podlaží', value: `${d.podlazi}.${d.pocetPodlazi ? ` z ${d.pocetPodlazi}` : ''}` },
+  d.vlastnictvi && { label: 'Vlastnictví', value: VLASTNICTVI_LABEL[d.vlastnictvi] },
+  d.konstrukce && { label: 'Konstrukce', value: d.konstrukce },
+  ...d.parametry,
+  { label: 'ID nabídky', value: d.externiId ?? item.id },
+].filter(Boolean) as { label: string; value: string }[];
+
+const mapHref = d.lokalita.lat && d.lokalita.lng
+  ? `https://mapy.cz/zakladni?x=${d.lokalita.lng}&y=${d.lokalita.lat}&z=15`
+  : `https://mapy.cz/zakladni?q=${encodeURIComponent(d.lokalita.obec)}`;
+
+const listingLd = {
+  '@type': 'RealEstateListing',
+  name: d.title,
+  url: new URL(`/nemovitosti/${item.id}/`, Astro.site).toString(),
+  datePosted: d.datum.toISOString().slice(0, 10),
+  image: new URL(og.src, Astro.site).toString(),
+  description: d.subtitle ?? d.title,
+  offers: d.cena !== null ? { '@type': 'Offer', price: d.cena, priceCurrency: 'CZK', availability: inactive ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock' } : undefined,
+  about: {
+    '@type': d.typ === 'byt' ? 'Apartment' : d.typ === 'dum' ? 'House' : 'Place',
+    floorSize: d.plocha ? { '@type': 'QuantitativeValue', value: d.plocha, unitCode: 'MTK' } : undefined,
+    numberOfRooms: d.dispozice,
+    address: { '@type': 'PostalAddress', addressLocality: d.lokalita.obec, addressRegion: d.lokalita.kraj, addressCountry: 'CZ' },
+  },
+};
+const breadcrumbLd = {
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Nemovitosti', item: new URL('/nemovitosti/', Astro.site).toString() },
+    { '@type': 'ListItem', position: 2, name: d.title },
+  ],
+};
+---
+<Base
+  title={`${d.title}${d.cena !== null ? ` – ${formatCena(item)}` : ''}`}
+  description={`${d.subtitle ?? d.title}. ${TYP_LABEL[d.typ]}, ${d.lokalita.obec}. ${formatCena(item)}. Prodává Realitní analytik – ${site.broker.name}.`}
+  ogImage={og.src}
+  jsonLd={[listingLd, breadcrumbLd]}
+  noindex={inactive}
+>
+  <article class="container-x pt-8">
+    <nav aria-label="Drobečková navigace" class="text-sm text-mute">
+      <a href="/nemovitosti/" class="hover:text-ink hover:underline">Nemovitosti</a>
+      <span aria-hidden="true"> / </span>
+      <span>{TYP_LABEL[d.typ]}, {d.lokalita.obec}</span>
+    </nav>
+
+    <header class="mt-5 grid gap-6 lg:grid-cols-12 lg:items-end">
+      <div class="lg:col-span-8">
+        {d.status !== 'aktivni' && (
+          <p class="mb-3 inline-block rounded-sm bg-ink px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-white">{STATUS_LABEL[d.status]}</p>
+        )}
+        <h1 class="text-[clamp(1.75rem,1.2rem+2vw,2.75rem)]">{d.title}</h1>
+        <p class="mt-3 text-lg text-ink-soft">
+          {d.lokalita.ulice ? `${d.lokalita.ulice}, ` : ''}{d.lokalita.obec}{d.lokalita.castObce ? ` – ${d.lokalita.castObce}` : ''}, okres {d.lokalita.okres}
+        </p>
+      </div>
+      <div class="lg:col-span-4 lg:text-right">
+        <p class:list={['num text-3xl font-semibold', { 'text-mute line-through decoration-2': inactive }]}>{formatCena(item)}</p>
+        {d.cenaPoznamka && d.cena !== null && <p class="mt-1 text-sm text-mute">{d.cenaPoznamka}</p>}
+      </div>
+    </header>
+
+    <!-- GALERIE -->
+    <div class="relative mt-8 grid gap-2 md:grid-cols-4 md:grid-rows-2" data-gallery>
+      {d.obrazky.map((img, i) => (
+        <a
+          href={fulls[i].src}
+          class:list={['group relative block overflow-hidden rounded-sm bg-beton', i === 0 ? 'md:col-span-2 md:row-span-2' : i < 5 ? 'hidden md:block' : 'hidden']}
+          data-gallery-item={i}
+          aria-label={`Fotografie ${i + 1} z ${d.obrazky.length}`}
+        >
+          <Image
+            src={img}
+            alt={alts[i] ?? `${d.title} – fotografie ${i + 1}`}
+            width={i === 0 ? 1200 : 600}
+            height={i === 0 ? 800 : 400}
+            widths={i === 0 ? [640, 960, 1200] : [400, 600]}
+            sizes={i === 0 ? '(min-width: 1024px) 600px, 100vw' : '300px'}
+            format="webp"
+            quality={i === 0 ? 82 : 76}
+            loading={i === 0 ? 'eager' : 'lazy'}
+            class="aspect-[3/2] h-full w-full object-cover"
+          />
+        </a>
+      ))}
+      {d.obrazky.length > 5 && (
+        <button type="button" class="btn btn-outline absolute bottom-4 left-4 bg-paper" data-gallery-all>Všech {d.obrazky.length} fotografií</button>
+      )}
+    </div>
+    <p class="mt-2 text-sm text-mute md:hidden">Klepnutím na fotografii otevřete galerii ({d.obrazky.length} fotografií).</p>
+
+    <div class="mt-10 grid gap-12 lg:grid-cols-12">
+      <div class="lg:col-span-8">
+        <!-- KLÍČOVÁ FAKTA -->
+        {facts.length > 0 && (
+          <dl class="grid grid-cols-2 gap-x-6 gap-y-4 border-y border-line py-5 sm:grid-cols-3 lg:grid-cols-5">
+            {facts.map((f) => (
+              <div>
+                <dt class="text-sm text-mute">{f.label}</dt>
+                <dd class="mt-0.5 font-semibold">{f.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        <section class="mt-10">
+          <h2 class="text-2xl">Popis</h2>
+          <div class="prose-ra measure mt-4 text-[1.05rem] leading-relaxed text-ink">
+            <Content />
+          </div>
+        </section>
+
+        <section class="mt-12">
+          <h2 class="text-2xl">Parametry</h2>
+          <dl class="mt-4 divide-y divide-line border-y border-line">
+            {params.map((p) => (
+              <div class="grid grid-cols-[minmax(0,180px)_1fr] gap-4 py-2.5 text-[0.95rem]">
+                <dt class="text-mute">{p.label}</dt>
+                <dd>{p.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        {d.vybaveni.length > 0 && (
+          <section class="mt-12">
+            <h2 class="text-2xl">Vybavení a příslušenství</h2>
+            <ul class="mt-4 flex flex-wrap gap-2">
+              {d.vybaveni.map((v) => <li class="rounded-sm bg-beton px-3 py-1.5 text-[0.95rem]">{v}</li>)}
+            </ul>
+          </section>
+        )}
+
+        {d.pudorys && (
+          <section class="mt-12">
+            <h2 class="text-2xl">Půdorys</h2>
+            <Image src={d.pudorys} alt="Půdorys" width={1200} format="webp" class="mt-4 w-full rounded-sm border border-line" loading="lazy" />
+          </section>
+        )}
+
+        <section class="mt-12">
+          <h2 class="text-2xl">Kde to je</h2>
+          <p class="mt-3 text-ink-soft">{d.lokalita.obec}{d.lokalita.castObce ? ` – ${d.lokalita.castObce}` : ''}, okres {d.lokalita.okres}, {d.lokalita.kraj}. Přesnou adresu sdělíme zájemcům před prohlídkou.</p>
+          <!-- Programátor: nahradit embedem Mapy.cz (iframe/Leaflet) s pinem na přibližnou polohu – viz zadání -->
+          <a href={mapHref} target="_blank" rel="noopener" class="mt-4 flex aspect-[16/7] items-center justify-center rounded-sm border border-line bg-beton text-ink-soft hover:bg-beton-deep">
+            Zobrazit na Mapy.cz
+          </a>
+        </section>
+
+        {(d.video || d.prohlidka3d) && (
+          <section class="mt-12">
+            <h2 class="text-2xl">Prohlídka na dálku</h2>
+            <div class="mt-4 flex flex-wrap gap-3">
+              {d.video && <a href={d.video} target="_blank" rel="noopener" class="btn btn-outline">Videoprohlídka</a>}
+              {d.prohlidka3d && <a href={d.prohlidka3d} target="_blank" rel="noopener" class="btn btn-outline">3D prohlídka</a>}
+            </div>
+          </section>
+        )}
+
+        <p class="mt-10 text-sm text-mute">Zveřejněno {formatDatum(d.datum)}. Údaje jsou převzaty z podkladů vlastníka a veřejných rejstříků; před podpisem rezervační smlouvy vše ověřujeme.</p>
+      </div>
+
+      <!-- SIDEBAR: kontakt / mám zájem -->
+      <aside class="lg:col-span-4">
+        <div class="rounded-md border border-line bg-paper p-6 lg:sticky lg:top-24">
+          <BrokerCard note="" />
+          {inactive ? (
+            <div class="mt-5 border-t border-line pt-5">
+              <p class="font-medium">Tato nemovitost už je {STATUS_LABEL[d.status].toLowerCase()}.</p>
+              <p class="mt-1 text-[0.95rem] text-ink-soft">Hledáte podobnou? Dejte nám vědět a ozveme se, jakmile budeme něco mít.</p>
+              <a href="/chci-koupit/" class="btn btn-ink mt-4 w-full">Hledám podobnou nemovitost</a>
+            </div>
+          ) : (
+            <div class="mt-5 border-t border-line pt-5">
+              <p class="font-medium">Mám zájem o prohlídku</p>
+              <LeadForm formId="zajem" subject={d.title} submitLabel="Domluvit prohlídku" messageLabel="Kdy se vám hodí prohlídka" messagePlaceholder="např. odpoledne v týdnu nebo o víkendu" compact class="mt-4" />
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
+  </article>
+
+  {similar.length > 0 && (
+    <section class="container-x mt-20">
+      <h2 class="text-2xl">Další nemovitosti v nabídce</h2>
+      <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {similar.map((n) => <PropertyCard item={n} />)}
+      </div>
+    </section>
+  )}
+
+  <CtaBand class="mt-20" title="Máte podobnou nemovitost na prodej?" text="Zjistěte, za kolik by se prodala. Ocenění z realizovaných prodejů zdarma, do 2 pracovních dnů." />
+
+  <!-- LIGHTBOX -->
+  <dialog data-lightbox class="m-auto h-dvh w-screen max-w-none bg-ink/95 p-0 text-white backdrop:bg-ink/80">
+    <button type="button" class="absolute right-4 top-4 z-10 rounded-sm border border-white/30 px-3 py-2 text-sm" data-lb-close>Zavřít</button>
+    <div class="flex h-full items-center justify-center p-4">
+      <button type="button" class="absolute left-2 top-1/2 -translate-y-1/2 p-3 text-3xl" data-lb-prev aria-label="Předchozí">‹</button>
+      <img data-lb-img alt="" class="max-h-full max-w-full object-contain" />
+      <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 p-3 text-3xl" data-lb-next aria-label="Další">›</button>
+    </div>
+    <p class="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm text-white/70" data-lb-counter></p>
+  </dialog>
+</Base>
+
+<script>
+  const gallery = document.querySelector<HTMLElement>('[data-gallery]');
+  const dlg = document.querySelector<HTMLDialogElement>('[data-lightbox]');
+  if (gallery && dlg) {
+    const items = [...gallery.querySelectorAll<HTMLAnchorElement>('[data-gallery-item]')];
+    const srcs = items.map((a) => a.href);
+    const img = dlg.querySelector<HTMLImageElement>('[data-lb-img]')!;
+    const counter = dlg.querySelector<HTMLElement>('[data-lb-counter]')!;
+    let i = 0;
+    const show = (n: number) => {
+      i = (n + srcs.length) % srcs.length;
+      img.src = srcs[i];
+      counter.textContent = `${i + 1} / ${srcs.length}`;
+    };
+    items.forEach((a, idx) => a.addEventListener('click', (e) => { e.preventDefault(); show(idx); dlg.showModal(); }));
+    gallery.querySelector('[data-gallery-all]')?.addEventListener('click', () => { show(0); dlg.showModal(); });
+    dlg.querySelector('[data-lb-close]')?.addEventListener('click', () => dlg.close());
+    dlg.querySelector('[data-lb-prev]')?.addEventListener('click', () => show(i - 1));
+    dlg.querySelector('[data-lb-next]')?.addEventListener('click', () => show(i + 1));
+    dlg.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') show(i - 1); if (e.key === 'ArrowRight') show(i + 1); });
+    dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  }
+</script>

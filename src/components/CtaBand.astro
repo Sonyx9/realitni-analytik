@@ -1,0 +1,21 @@
+---
+import { site } from '@/data/site';
+interface Props { title?: string; text?: string; class?: string }
+const {
+  title = 'Zjistěte, za kolik se prodá vaše nemovitost',
+  text = 'Ocenění z realizovaných prodejů, ne z inzerátů. Zdarma, do 2 pracovních dnů a bez závazku.',
+  class: cls = '',
+} = Astro.props;
+---
+<section class:list={['bg-ink text-white', cls]}>
+  <div class="container-x grid items-center gap-8 py-14 md:grid-cols-12">
+    <div class="md:col-span-7">
+      <h2 class="text-white">{title}</h2>
+      <p class="mt-4 max-w-xl text-lg text-white/75">{text}</p>
+    </div>
+    <div class="flex flex-col gap-3 sm:flex-row md:col-span-5 md:justify-end">
+      <a href="/oceneni-nemovitosti-zdarma/" class="btn btn-primary btn-lg">Chci ocenění zdarma</a>
+      <a href={site.broker.phoneHref} class="btn btn-lg border border-white/30 text-white hover:bg-white/10">Zavolat {site.broker.phone}</a>
+    </div>
+  </div>
+</section>

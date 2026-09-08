@@ -1,0 +1,78 @@
+---
+import Base from '@/layouts/Base.astro';
+import ValuationForm from '@/components/ValuationForm.astro';
+import Faq from '@/components/Faq.astro';
+import Testimonials from '@/components/Testimonials.astro';
+import { site } from '@/data/site';
+const b = site.broker;
+
+const faq = [
+  { q: 'Je ocenění opravdu zdarma a nezávazné?', a: 'Ano. Ocenění vypracujeme bez poplatku a bez podmínky, že s námi budete prodávat. Většina lidí, kterým oceňujeme, se ozve až za několik měsíců – a někteří vůbec, protože zjistili, že se jim prodej nevyplatí.' },
+  { q: 'Z čeho cena vychází?', a: 'Ze skutečně realizovaných prodejů srovnatelných nemovitostí v okolí (katastr nemovitostí a naše vlastní obchody), z aktuální nabídky, stavu nemovitosti a specifik lokality. Ne z nabídkových cen v inzerci.' },
+  { q: 'Jak se liší od online kalkulačky?', a: 'Kalkulačky pracují s inzerovanými cenami a průměrem za lokalitu. My oceňujeme konkrétní nemovitost, s jejím stavem, dispozicí, podlažím a okolím – a ručíme za výsledek vlastním jménem.' },
+  { q: 'Jak dlouho to trvá?', a: 'Orientační ocenění pošleme do 2 pracovních dnů e-mailem. Pokud budeme potřebovat upřesnit údaje, zavoláme. Přesné ocenění s prohlídkou domluvíme podle vašeho času.' },
+  { q: 'K čemu ocenění použiji?', a: 'Pro rozhodnutí o prodeji, pro dědické nebo rozvodové řízení, vypořádání spoluvlastníků, refinancování hypotéky nebo jen pro přehled. Pro soudní a bankovní účely připravíme znalecký posudek prostřednictvím spolupracujícího znalce.' },
+];
+const faqLd = { '@type': 'FAQPage', mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
+---
+<Base
+  title="Ocenění nemovitosti zdarma – z realizovaných prodejů, do 2 dnů"
+  description="Zjistěte, za kolik se skutečně prodá váš byt, dům nebo pozemek. Ocenění od realitního analytika z dat katastru, zdarma a nezávazně. Vyškov, Brno, Praha."
+  jsonLd={[faqLd]}
+>
+  <section class="bg-beton">
+    <div class="container-x grid gap-10 py-14 lg:grid-cols-12 lg:py-20">
+      <div class="lg:col-span-5">
+        <h1>Ocenění nemovitosti zdarma</h1>
+        <p class="mt-5 text-lg leading-relaxed text-ink-soft">
+          Za kolik se prodá váš byt, dům nebo pozemek – podle toho, za kolik se v okolí skutečně prodalo. Odpověď do 2 pracovních dnů, bez poplatku a bez závazku.
+        </p>
+        <ul class="mt-8 space-y-4 text-[1.02rem]">
+          <li class="flex gap-3"><span class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-wine"></span><span><strong class="font-semibold">Z realizovaných cen.</strong> Pracujeme s daty katastru a našimi obchody, ne s inzeráty.</span></li>
+          <li class="flex gap-3"><span class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-wine"></span><span><strong class="font-semibold">Ocenění dělá {b.shortName} osobně.</strong> {b.valuationsDone.toLocaleString('cs-CZ')}+ ocenění za {b.yearsOnMarket} let.</span></li>
+          <li class="flex gap-3"><span class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-wine"></span><span><strong class="font-semibold">Dostanete podklady.</strong> Uvidíte, ze kterých prodejů cena vychází a proč.</span></li>
+        </ul>
+        <div class="mt-10 flex items-center gap-4 border-t border-ink/15 pt-6">
+          <img src={b.photo} alt="" width="56" height="56" class="h-14 w-14 rounded-full object-cover" />
+          <p class="text-[0.95rem] text-ink-soft">Raději po telefonu? <a href={b.phoneHref} class="font-semibold text-ink hover:text-wine">{b.phone}</a><br />{b.name}, {b.role}</p>
+        </div>
+      </div>
+      <div class="lg:col-span-7">
+        <ValuationForm variant="full" />
+      </div>
+    </div>
+  </section>
+
+  <section class="container-x grid gap-12 py-20 lg:grid-cols-12">
+    <div class="lg:col-span-5">
+      <h2>Jak ocenění probíhá</h2>
+    </div>
+    <ol class="space-y-8 lg:col-span-7">
+      {[
+        ['Vyplníte formulář', 'Stačí typ nemovitosti, adresa a základní údaje. Zabere to dvě minuty.'],
+        ['Ověříme si detaily', 'Pokud něco chybí, zavoláme. U domů a pozemků si často prohlédneme katastr a územní plán.'],
+        ['Pošleme ocenění', 'Do 2 pracovních dnů dostanete e-mailem cenové rozpětí a přehled srovnatelných prodejů, ze kterých vychází.'],
+        ['Vy se rozhodnete', 'Prodej, počkat, nebo nic. Neurgujeme. Když se rozhodnete prodávat, víte, s kým a za kolik.'],
+      ].map(([t, x], i) => (
+        <li class="grid grid-cols-[3rem_1fr] gap-4">
+          <span class="font-serif text-3xl font-medium text-wine" style="font-variation-settings:'opsz' 48">{i + 1}</span>
+          <div><h3 class="font-sans text-lg font-semibold tracking-normal">{t}</h3><p class="mt-1.5 text-ink-soft">{x}</p></div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="bg-beton">
+    <div class="container-x py-20">
+      <h2>Co říkají lidé, kterým jsme oceňovali a prodali</h2>
+      <Testimonials class="mt-10" />
+    </div>
+  </section>
+
+  <section class="container-x py-20">
+    <div class="grid gap-10 lg:grid-cols-12">
+      <div class="lg:col-span-4"><h2>Časté otázky</h2></div>
+      <div class="lg:col-span-8"><Faq items={faq} /></div>
+    </div>
+  </section>
+</Base>

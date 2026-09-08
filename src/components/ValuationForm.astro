@@ -1,0 +1,253 @@
+---
+/**
+ * Formulář ocenění zdarma – hlavní konverzní prvek webu.
+ * compact = verze do hero (3 pole → přesměruje na plnou stránku s předvyplněním)
+ * full    = třífázový formulář na /oceneni-nemovitosti-zdarma/
+ * bar     = jednořádková lišta pod hero (typ, obec, plocha → plný formulář)
+ */
+import { site } from '@/data/site';
+interface Props { variant?: 'compact' | 'full' | 'bar'; class?: string }
+const { variant = 'compact', class: cls = '' } = Astro.props;
+const typy = [
+  { v: 'byt', l: 'Byt' },
+  { v: 'dum', l: 'Rodinný dům' },
+  { v: 'pozemek', l: 'Pozemek' },
+  { v: 'jine', l: 'Jiné' },
+];
+const stavy = ['novostavba', 'po rekonstrukci', 'dobrý, udržovaný', 'původní stav', 'k rekonstrukci'];
+---
+{variant === 'bar' && (
+  <form action="/oceneni-nemovitosti-zdarma/" method="get" class:list={['bg-paper p-5 shadow-panel sm:p-6', cls]} aria-label="Ocenění nemovitosti zdarma">
+    <div class="grid gap-4 lg:grid-cols-[auto_1.4fr_1fr_0.7fr_auto] lg:items-end">
+      <div class="lg:pr-4">
+        <p class="eyebrow">Ocenění zdarma</p>
+        <p class="mt-1 font-serif text-xl font-medium leading-tight" style="font-variation-settings:'opsz' 24">Za kolik se prodá vaše nemovitost?</p>
+      </div>
+      <div>
+        <label for="bar-typ" class="label">Typ nemovitosti</label>
+        <select id="bar-typ" name="typ" class="field rounded-none">
+          {typy.map((t) => <option value={t.v}>{t.l}</option>)}
+        </select>
+      </div>
+      <div>
+        <label for="bar-obec" class="label">Obec nebo adresa</label>
+        <input id="bar-obec" name="obec" type="text" class="field rounded-none" placeholder="např. Vyškov" required />
+      </div>
+      <div>
+        <label for="bar-plocha" class="label">Plocha (m²)</label>
+        <input id="bar-plocha" name="plocha" type="number" inputmode="numeric" min="1" class="field rounded-none" placeholder="74" />
+      </div>
+      <button type="submit" class="btn btn-primary rounded-none px-6 text-[11px] font-medium uppercase tracking-[0.16em]" style="min-height:3.1rem">Spočítat cenu</button>
+    </div>
+    <p class="mt-3 text-sm text-mute">Zdarma, do 2 pracovních dnů, bez závazku.</p>
+  </form>
+)}
+{variant === 'compact' ? (
+  <form
+    action="/oceneni-nemovitosti-zdarma/"
+    method="get"
+    class:list={['rounded-md border border-line bg-paper p-6 shadow-panel sm:p-7', cls]}
+    aria-labelledby="val-title"
+  >
+    <p id="val-title" class="font-serif text-2xl font-medium" style="font-variation-settings:'opsz' 32">Za kolik se prodá vaše nemovitost?</p>
+    <p class="mt-1.5 text-[0.95rem] text-ink-soft">Ocenění z realizovaných prodejů, zdarma a do 2 pracovních dnů.</p>
+
+    <fieldset class="mt-5">
+      <legend class="label">Typ nemovitosti</legend>
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {typy.map((t, i) => (
+          <label class="cursor-pointer">
+            <input type="radio" name="typ" value={t.v} class="peer sr-only" checked={i === 0} />
+            <span class="block rounded-sm border border-line py-2.5 text-center text-[0.95rem] font-medium peer-checked:border-ink peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-wine">{t.l}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+
+    <div class="mt-4 grid gap-4 sm:grid-cols-[1fr_140px]">
+      <div>
+        <label for="val-obec" class="label">Obec nebo adresa</label>
+        <input id="val-obec" name="obec" type="text" class="field" placeholder="např. Vyškov, Dědická 12" autocomplete="street-address" required />
+      </div>
+      <div>
+        <label for="val-plocha" class="label">Plocha (m²)</label>
+        <input id="val-plocha" name="plocha" type="number" inputmode="numeric" min="1" class="field" placeholder="74" />
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg mt-5 w-full">Pokračovat k ocenění zdarma</button>
+    <p class="mt-3 text-center text-sm text-mute">Nezávazné. Kontakt doplníte v dalším kroku.</p>
+  </form>
+) : variant === 'full' ? (
+  <form
+    id="valuation-form"
+    action={site.formEndpoint}
+    method="post"
+    class:list={['rounded-md border border-line bg-paper p-6 sm:p-8', cls]}
+    data-valuation
+    novalidate
+  >
+    <input type="hidden" name="form" value="oceneni" />
+    <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
+
+    <ol class="mb-8 flex gap-2 text-sm font-medium text-mute" aria-label="Postup">
+      <li data-step-indicator="1" class="flex-1 border-t-2 border-ink pt-2 text-ink">1. Nemovitost</li>
+      <li data-step-indicator="2" class="flex-1 border-t-2 border-line pt-2">2. Podrobnosti</li>
+      <li data-step-indicator="3" class="flex-1 border-t-2 border-line pt-2">3. Kontakt</li>
+    </ol>
+
+    <section data-step="1">
+      <fieldset>
+        <legend class="label">Typ nemovitosti</legend>
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {typy.map((t, i) => (
+            <label class="cursor-pointer">
+              <input type="radio" name="typ" value={t.v} class="peer sr-only" checked={i === 0} />
+              <span class="block rounded-sm border border-line py-2.5 text-center text-[0.95rem] font-medium peer-checked:border-ink peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-wine">{t.l}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <div class="mt-5 grid gap-5 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label for="f-obec" class="label">Adresa nebo obec</label>
+          <input id="f-obec" name="obec" type="text" class="field" placeholder="ulice, číslo popisné, obec" required />
+        </div>
+        <div>
+          <label for="f-plocha" class="label">Užitná plocha (m²)</label>
+          <input id="f-plocha" name="plocha" type="number" inputmode="numeric" min="1" class="field" />
+        </div>
+        <div>
+          <label for="f-dispozice" class="label">Dispozice</label>
+          <input id="f-dispozice" name="dispozice" type="text" class="field" placeholder="např. 3+kk" />
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button type="button" class="btn btn-ink" data-next>Pokračovat</button>
+      </div>
+    </section>
+
+    <section data-step="2" hidden>
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label for="f-stav" class="label">Stav nemovitosti</label>
+          <select id="f-stav" name="stav" class="field">
+            {stavy.map((s) => <option value={s}>{s}</option>)}
+          </select>
+        </div>
+        <div>
+          <label for="f-plan" class="label">Kdy plánujete prodat</label>
+          <select id="f-plan" name="plan" class="field">
+            <option value="co-nejdrive">co nejdříve</option>
+            <option value="do-pul-roku">do půl roku</option>
+            <option value="pozdeji">později, zatím zjišťuji cenu</option>
+            <option value="neprodavam">neprodávám, potřebuji cenu pro jiný účel</option>
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <span class="label">Součástí je</span>
+          <div class="flex flex-wrap gap-2">
+            {['balkon / lodžie', 'terasa', 'zahrada', 'sklep', 'garáž', 'parkovací stání', 'výtah'].map((v) => (
+              <label class="cursor-pointer">
+                <input type="checkbox" name="vybaveni" value={v} class="peer sr-only" />
+                <span class="chip peer-checked:border-ink peer-checked:bg-ink peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-wine">{v}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+        <div class="sm:col-span-2">
+          <label for="f-pozn" class="label">Cokoli dalšího, co bychom měli vědět <span class="font-normal text-mute">(nepovinné)</span></label>
+          <textarea id="f-pozn" name="poznamka" rows="3" class="field" placeholder="např. byt je pronajatý do června, dům má nový kotel…"></textarea>
+        </div>
+      </div>
+      <div class="mt-6 flex justify-between">
+        <button type="button" class="btn btn-outline" data-prev>Zpět</button>
+        <button type="button" class="btn btn-ink" data-next>Pokračovat</button>
+      </div>
+    </section>
+
+    <section data-step="3" hidden>
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label for="f-jmeno" class="label">Jméno a příjmení</label>
+          <input id="f-jmeno" name="jmeno" type="text" class="field" autocomplete="name" required />
+        </div>
+        <div>
+          <label for="f-tel" class="label">Telefon</label>
+          <input id="f-tel" name="telefon" type="tel" class="field" autocomplete="tel" required />
+        </div>
+        <div>
+          <label for="f-email" class="label">E-mail</label>
+          <input id="f-email" name="email" type="email" class="field" autocomplete="email" required />
+        </div>
+      </div>
+      <label class="mt-5 flex items-start gap-3 text-sm text-ink-soft">
+        <input type="checkbox" name="souhlas" required class="mt-1 h-4 w-4 accent-wine" />
+        <span>Souhlasím se zpracováním údajů pro účely vypracování ocenění. <a href="/ochrana-osobnich-udaju/" class="underline">Jak s údaji nakládáme</a></span>
+      </label>
+      <div class="mt-6 flex items-center justify-between gap-4">
+        <button type="button" class="btn btn-outline" data-prev>Zpět</button>
+        <button type="submit" class="btn btn-primary btn-lg">Odeslat žádost o ocenění</button>
+      </div>
+      <p class="mt-4 text-sm text-mute">Ozveme se do 2 pracovních dnů. Pokud bude potřeba upřesnit detaily, zavoláme.</p>
+    </section>
+
+    <p data-form-error hidden class="mt-4 rounded-sm bg-wine-tint px-4 py-3 text-sm text-wine-deep" role="alert"></p>
+  </form>
+) : null}
+
+{variant === 'full' && (
+  <script>
+    const form = document.querySelector<HTMLFormElement>('[data-valuation]');
+    if (form) {
+      const steps = [...form.querySelectorAll<HTMLElement>('[data-step]')];
+      const indicators = [...form.querySelectorAll<HTMLElement>('[data-step-indicator]')];
+      let current = 0;
+
+      // Předvyplnění z hero formuláře (GET parametry)
+      const params = new URLSearchParams(location.search);
+      for (const [k, v] of params) {
+        const el = form.elements.namedItem(k);
+        if (el instanceof RadioNodeList) { el.value = v; }
+        else if (el instanceof HTMLInputElement || el instanceof HTMLSelectElement) el.value = v;
+      }
+
+      const show = (i: number) => {
+        current = i;
+        steps.forEach((s, idx) => (s.hidden = idx !== i));
+        indicators.forEach((ind, idx) => {
+          ind.classList.toggle('border-ink', idx <= i);
+          ind.classList.toggle('text-ink', idx <= i);
+          ind.classList.toggle('border-line', idx > i);
+        });
+        steps[i].querySelector<HTMLElement>('input, select, textarea')?.focus({ preventScroll: true });
+        form.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      };
+      const validStep = (i: number) => {
+        const fields = steps[i].querySelectorAll<HTMLInputElement>('input, select, textarea');
+        for (const f of fields) if (!f.checkValidity()) { f.reportValidity(); return false; }
+        return true;
+      };
+      form.querySelectorAll('[data-next]').forEach((b) => b.addEventListener('click', () => validStep(current) && show(current + 1)));
+      form.querySelectorAll('[data-prev]').forEach((b) => b.addEventListener('click', () => show(current - 1)));
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!validStep(current)) return;
+        const err = form.querySelector<HTMLElement>('[data-form-error]')!;
+        const btn = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+        btn.disabled = true; btn.textContent = 'Odesílám…';
+        try {
+          const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+          if (!res.ok) throw new Error(String(res.status));
+          window.dataLayer?.push({ event: 'lead_oceneni' });
+          location.href = '/dekujeme/?typ=oceneni';
+        } catch {
+          err.hidden = false;
+          err.textContent = 'Odeslání se nepodařilo. Zkuste to znovu, nebo zavolejte – číslo je v hlavičce stránky.';
+          btn.disabled = false; btn.textContent = 'Odeslat žádost o ocenění';
+        }
+      });
+    }
+  </script>
+)}

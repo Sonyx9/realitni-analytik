@@ -1,0 +1,35 @@
+---
+import Base from '@/layouts/Base.astro';
+import LeadForm from '@/components/LeadForm.astro';
+import { site } from '@/data/site';
+const b = site.broker;
+---
+<Base title="Kontakt" description="Kontakt na Ing. Petra Dřímala, Realitní analytik. Vyškov, Brno, Praha. Telefon, e-mail, adresa a kontaktní formulář.">
+  <section class="container-x grid gap-12 py-14 lg:grid-cols-12 lg:py-20">
+    <div class="lg:col-span-5">
+      <h1>Kontakt</h1>
+      <p class="mt-4 text-lg text-ink-soft">Nejrychlejší je telefon. Zvedám i o víkendu; když nemůžu, zavolám zpět.</p>
+      <div class="mt-8 flex items-center gap-5">
+        <img src={b.photo} alt={b.name} width="96" height="96" class="h-24 w-24 rounded-full object-cover" />
+        <div>
+          <p class="text-lg font-semibold">{b.name}</p>
+          <p class="text-mute">{b.role}</p>
+        </div>
+      </div>
+      <dl class="mt-8 divide-y divide-line border-y border-line text-[1.02rem]">
+        <div class="grid grid-cols-[110px_1fr] py-3"><dt class="text-mute">Telefon</dt><dd><a href={b.phoneHref} class="font-medium hover:text-wine">{b.phone}</a></dd></div>
+        <div class="grid grid-cols-[110px_1fr] py-3"><dt class="text-mute">E-mail</dt><dd><a href={`mailto:${b.email}`} class="font-medium hover:text-wine">{b.email}</a></dd></div>
+        <div class="grid grid-cols-[110px_1fr] py-3"><dt class="text-mute">Adresa</dt><dd>{b.address}<br /><span class="text-sm text-mute">schůzky po domluvě, rádi přijedeme k vám</span></dd></div>
+        <div class="grid grid-cols-[110px_1fr] py-3"><dt class="text-mute">IČO</dt><dd>{b.ico}</dd></div>
+        <div class="grid grid-cols-[110px_1fr] py-3"><dt class="text-mute">Působnost</dt><dd>{b.regions.join(', ')}</dd></div>
+      </dl>
+    </div>
+    <div class="lg:col-span-7 lg:pl-6">
+      <div class="rounded-md border border-line p-6 sm:p-8">
+        <h2 class="text-2xl">Napište nám</h2>
+        <p class="mt-2 text-ink-soft">Chcete ocenit nemovitost? Rychlejší je <a href="/oceneni-nemovitosti-zdarma/" class="underline">formulář ocenění</a>. Na cokoli jiného odpovíme do jednoho pracovního dne.</p>
+        <LeadForm formId="kontakt" class="mt-6" messagePlaceholder="S čím vám můžeme pomoci?" />
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,18 @@
+---
+interface QA { q: string; a: string }
+interface Props { items: QA[]; class?: string }
+const { items, class: cls = '' } = Astro.props;
+---
+<div class:list={['divide-y divide-line border-y border-line', cls]}>
+  {items.map((qa) => (
+    <details class="group py-4">
+      <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-1 text-[1.05rem] font-medium text-ink [&::-webkit-details-marker]:hidden">
+        {qa.q}
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" class="shrink-0 transition-transform group-open:rotate-45">
+          <path d="M9 2v14M2 9h14" stroke="currentColor" stroke-width="2" />
+        </svg>
+      </summary>
+      <p class="max-w-2xl pb-2 pt-2 leading-relaxed text-ink-soft">{qa.a}</p>
+    </details>
+  ))}
+</div>

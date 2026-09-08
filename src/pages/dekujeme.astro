@@ -1,0 +1,20 @@
+---
+import Base from '@/layouts/Base.astro';
+import { site } from '@/data/site';
+---
+<Base title="Děkujeme" description="Vaše zpráva byla odeslána." noindex>
+  <section class="container-x py-24">
+    <div class="mx-auto max-w-xl text-center">
+      <h1>Máme to. Ozveme se.</h1>
+      <p class="mt-5 text-lg text-ink-soft" data-thanks-text>Zprávu jsme přijali. Odpovíme do jednoho pracovního dne – u ocenění do dvou.</p>
+      <p class="mt-8 text-ink-soft">Spěchá to? <a href={site.broker.phoneHref} class="font-semibold text-ink hover:text-wine">{site.broker.phone}</a></p>
+      <a href="/" class="btn btn-outline mt-10">Zpět na úvod</a>
+    </div>
+  </section>
+  <script>
+    // Konverzní událost pro GA4/Ads – čte typ z URL (?typ=oceneni|zajem|kontakt|koupe)
+    const typ = new URLSearchParams(location.search).get('typ') ?? 'obecne';
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: 'lead_thankyou', lead_type: typ });
+  </script>
+</Base>

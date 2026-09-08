@@ -1,0 +1,53 @@
+---
+import Logo from './Logo.astro';
+import { nav, site } from '@/data/site';
+const year = new Date().getFullYear();
+---
+<footer class="bg-ink text-white/80">
+  <div class="container-x grid gap-12 py-14 md:grid-cols-12">
+    <div class="md:col-span-5">
+      <Logo light />
+      <p class="mt-5 max-w-sm text-[0.95rem] leading-relaxed">
+        {site.broker.name}, {site.broker.role}. Prodej a ocenění nemovitostí – Vyškov, jižní Morava, Praha.
+      </p>
+      <div class="mt-6 flex flex-col gap-1.5 text-[0.95rem]">
+        <a href={site.broker.phoneHref} class="text-white hover:underline">{site.broker.phone}</a>
+        <a href={`mailto:${site.broker.email}`} class="text-white hover:underline">{site.broker.email}</a>
+        <span>{site.broker.address}</span>
+        <span>IČO {site.broker.ico}</span>
+      </div>
+    </div>
+
+    <div class="md:col-span-3">
+      <p class="mb-4 font-medium text-white">Web</p>
+      <ul class="space-y-2 text-[0.95rem]">
+        {nav.map((i) => <li><a href={i.href} class="hover:text-white hover:underline">{i.label}</a></li>)}
+        <li><a href="/reference/" class="hover:text-white hover:underline">Reference</a></li>
+        <li><a href="/chci-koupit/" class="hover:text-white hover:underline">Hledám nemovitost</a></li>
+      </ul>
+    </div>
+
+    <div class="md:col-span-4">
+      <p class="mb-4 font-medium text-white">Kde nás najdete</p>
+      <ul class="space-y-2 text-[0.95rem]">
+        <li><a href={site.sreality} rel="noopener" target="_blank" class="hover:text-white hover:underline">Profil na Sreality.cz</a></li>
+        <li><a href={site.social.facebook} rel="noopener" target="_blank" class="hover:text-white hover:underline">Facebook</a></li>
+        <li><a href={site.social.instagram} rel="noopener" target="_blank" class="hover:text-white hover:underline">Instagram</a></li>
+        <li><a href={site.social.linkedin} rel="noopener" target="_blank" class="hover:text-white hover:underline">LinkedIn</a></li>
+      </ul>
+      <p class="mt-8 text-sm leading-relaxed text-white/60">
+        Pojištění profesní odpovědnosti. Právní servis zajišťuje spolupracující advokátní kancelář; úschova kupní ceny u advokáta nebo banky.
+      </p>
+    </div>
+  </div>
+  <div class="border-t border-white/10">
+    <div class="container-x flex flex-col gap-3 py-5 text-sm text-white/60 sm:flex-row sm:items-center sm:justify-between">
+      <span>© {year} {site.name}</span>
+      <div class="flex flex-wrap gap-x-5 gap-y-1">
+        <a href="/ochrana-osobnich-udaju/" class="hover:text-white">Ochrana osobních údajů</a>
+        <a href="/cookies/" class="hover:text-white">Cookies</a>
+        <a href="/informace-pro-spotrebitele/" class="hover:text-white">Informace pro spotřebitele</a>
+      </div>
+    </div>
+  </div>
+</footer>
