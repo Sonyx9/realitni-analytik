@@ -1,0 +1,4 @@
+# Přesměrování (Cloudflare Pages / Netlify). Staré URL současného webu doplnit podle kap. 3 zadání.
+/analyzy            /blog                301
+/analyzy/*          /blog/:splat         301
+/analyzy/rss.xml    /blog/rss.xml        301

@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import BlogList from '@/components/BlogList.astro';
+import BlogFilter from '@/components/BlogFilter.astro';
+import { KATEGORIE_LABEL } from '@/lib/format';
+export async function getStaticPaths() {
+  return Object.keys(KATEGORIE_LABEL).map((kategorie) => ({ params: { kategorie } }));
+}
+const { kategorie } = Astro.params;
+const all = (await getCollection('blog')).sort((a, b) => b.data.datum.getTime() - a.data.datum.getTime());
+const posts = all.filter((p) => p.data.kategorie === kategorie);
+const counts = all.reduce<Record<string, number>>((acc, p) => ((acc[p.data.kategorie] = (acc[p.data.kategorie] ?? 0) + 1), acc), {});
+const label = KATEGORIE_LABEL[kategorie!];
+const popis: Record<string, string> = {
+  analyza: 'Co se děje s cenami ve Vyškově, v Brně a v Praze – z katastru a z vlastních obchodů.',
+  rady: 'Jak připravit nemovitost, na co si dát pozor při koupi a jak na hypotéku.',
+  novinky: 'Nové nemovitosti v nabídce a co se děje u nás.',
+};
+---
+<Base title={`${label} – blog`} description={popis[kategorie!]}>
+  <section class="container-x py-14 lg:py-20">
+    <div class="max-w-2xl">
+      <p class="eyebrow"><a href="/blog/" class="hover:text-ink">Blog</a></p>
+      <h1 class="mt-3">{label}</h1>
+      <p class="mt-4 text-lg text-ink-soft">{popis[kategorie!]}</p>
+    </div>
+    <BlogFilter active={kategorie} counts={counts} total={all.length} class="mt-10" />
+    {posts.length ? <BlogList posts={posts} class="mt-6" /> : <p class="mt-10 text-mute">Zatím tu nic není.</p>}
+  </section>
+  <CtaBand />
+</Base>

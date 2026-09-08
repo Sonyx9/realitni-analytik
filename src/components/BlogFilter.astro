@@ -1,0 +1,17 @@
+---
+/** Přepínač kategorií blogu – statické odkazy (SEO), aktivní položka podle URL. */
+import { KATEGORIE_LABEL } from '@/lib/format';
+interface Props { active?: string; counts: Record<string, number>; total: number }
+const { active = 'vse', counts, total } = Astro.props;
+const items = [
+  { key: 'vse', label: 'Vše', href: '/blog/', n: total },
+  ...Object.entries(KATEGORIE_LABEL).map(([key, label]) => ({ key, label, href: `/blog/kategorie/${key}/`, n: counts[key] ?? 0 })),
+];
+---
+<nav aria-label="Kategorie článků" class="flex flex-wrap gap-2">
+  {items.map((i) => (
+    <a href={i.href} class:list={['chip', { 'chip-active': i.key === active }]} aria-current={i.key === active ? 'page' : undefined}>
+      {i.label} <span class="num opacity-60">({i.n})</span>
+    </a>
+  ))}
+</nav>

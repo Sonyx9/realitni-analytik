@@ -53,13 +53,14 @@ const nemovitosti = defineCollection({
     }),
 });
 
-const analyzy = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/analyzy' }),
+const blog = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/blog' }),
   schema: ({ image }) =>
     z.object({
       title: z.string(),
       perex: z.string().max(220),
       datum: z.coerce.date(),
+      kategorie: z.enum(['analyza', 'rady', 'novinky']).default('analyza'),
       lokalita: z.string().optional(), // "Vyškov", "Brno", "Praha"
       cover: image().optional(),
       tags: z.array(z.string()).default([]),
@@ -78,4 +79,4 @@ const reference = defineCollection({
   }),
 });
 
-export const collections = { nemovitosti, analyzy, reference };
+export const collections = { nemovitosti, blog, reference };

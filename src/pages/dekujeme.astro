@@ -12,7 +12,7 @@ import { site } from '@/data/site';
     </div>
   </section>
   <script>
-    // Konverzní událost pro GA4/Ads – čte typ z URL (?typ=oceneni|zajem|kontakt|koupe)
+    // Konverzní událost pro GA4/Ads – čte typ z URL (?typ=oceneni|zajem|kontakt|koupe|hypoteka)
     const typ = new URLSearchParams(location.search).get('typ') ?? 'obecne';
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: 'lead_thankyou', lead_type: typ });

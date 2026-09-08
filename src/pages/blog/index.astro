@@ -1,0 +1,21 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import BlogList from '@/components/BlogList.astro';
+import BlogFilter from '@/components/BlogFilter.astro';
+const posts = (await getCollection('blog')).sort((a, b) => b.data.datum.getTime() - a.data.datum.getTime());
+const counts = posts.reduce<Record<string, number>>((acc, p) => ((acc[p.data.kategorie] = (acc[p.data.kategorie] ?? 0) + 1), acc), {});
+---
+<Base title="Blog – analýzy trhu, rady k prodeji a novinky" description="Ceny bytů a domů z realizovaných prodejů, rady před prodejem i koupí, hypotéky a novinky z nabídky. Blog realitního analytika pro Vyškovsko, Brno a Prahu.">
+  <section class="container-x py-14 lg:py-20">
+    <div class="max-w-2xl">
+      <p class="eyebrow">Blog</p>
+      <h1 class="mt-3">Z reálných prodejů, ne z tiskových zpráv</h1>
+      <p class="mt-4 text-lg text-ink-soft">Analýzy cen z katastru, praktické rady před prodejem i koupí a novinky z nabídky. Vyškovsko, Brno, Praha.</p>
+    </div>
+    <BlogFilter counts={counts} total={posts.length} class="mt-10" />
+    <BlogList posts={posts} class="mt-6" />
+  </section>
+  <CtaBand title="Chcete vědět, co tato čísla znamenají pro vaši nemovitost?" text="Ocením ji z realizovaných prodejů ve vašem okolí. Zdarma, do 2 pracovních dnů." />
+</Base>

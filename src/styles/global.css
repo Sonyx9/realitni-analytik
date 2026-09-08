@@ -97,7 +97,7 @@
   .label { @apply mb-1.5 block text-sm font-medium text-ink-soft; }
 
   .chip { @apply inline-flex items-center rounded-full border border-line bg-paper px-3.5 py-1.5 text-sm font-medium text-ink-soft transition-colors hover:border-ink hover:text-ink; }
-  .chip[aria-pressed='true'] { @apply border-ink bg-ink text-white; }
+  .chip[aria-pressed='true'], .chip-active { @apply border-ink bg-ink text-white; }
 
   .card { @apply overflow-hidden rounded-md bg-paper; }
   .photo-note { @apply absolute bottom-2 left-2 rounded-sm bg-ink/70 px-2 py-1 text-[11px] text-white/90; }

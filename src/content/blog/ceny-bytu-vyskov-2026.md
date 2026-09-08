@@ -1,6 +1,7 @@
 ---
 title: "Za kolik se ve Vyškově skutečně prodávají byty (léto 2026)"
 perex: "Nabídkové ceny v inzerci a ceny z katastru se rozcházejí. Porovnali jsme 38 realizovaných prodejů bytů ve Vyškově za posledních 12 měsíců."
+kategorie: analyza
 datum: 2026-08-25
 lokalita: Vyškov
 tags: ["byty", "Vyškov", "ceny"]

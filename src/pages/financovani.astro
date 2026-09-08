@@ -1,0 +1,91 @@
+---
+/**
+ * Financování / hypoteční úvěr.
+ * TODO právní: zprostředkování spotřebitelského úvěru na bydlení vyžaduje oprávnění ČNB (samostatný
+ * zprostředkovatel / vázaný zástupce). Texty jsou napsané obecně („zajistím, porovnám, propojím“);
+ * před spuštěním doplnit, kdo úvěr zprostředkovává (Petr s oprávněním, nebo spolupracující specialista)
+ * a povinné informace do stránky Informace pro spotřebitele.
+ */
+import Base from '@/layouts/Base.astro';
+import Steps from '@/components/Steps.astro';
+import Faq from '@/components/Faq.astro';
+import LeadForm from '@/components/LeadForm.astro';
+import CtaBand from '@/components/CtaBand.astro';
+import { site } from '@/data/site';
+const b = site.broker;
+
+const steps = [
+  { title: 'Úvodní konzultace', text: 'Kolik si můžete půjčit, s jakou splátkou a co k tomu banka bude chtít. Do 30 minut víte, na čem jste.' },
+  { title: 'Porovnání bank', text: 'Nabídky několika bank vedle sebe – sazba, poplatky, podmínky předčasného splacení. Vyberete vy.' },
+  { title: 'Předschválení', text: 'S předschváleným úvěrem jdete na prohlídku jako hotový kupující. Prodávající to vidí a bere vás vážně.' },
+  { title: 'Čerpání a vklad', text: 'Odhad, zástavní smlouvy, katastr, čerpání – hlídám termíny, aby to sedělo s kupní smlouvou a úschovou.' },
+];
+const pro = [
+  ['Kupující našich nemovitostí', 'Financování řešíme rovnou s rezervací – jeden termín, jedny podklady, žádné dohadování mezi bankou, advokátem a makléřem.'],
+  ['Kdo kupuje jinde', 'Nemusíte kupovat od nás. Porovnání bank a předschválení uděláme pro jakoukoli nemovitost v ČR.'],
+  ['Refinancování', 'Končí vám fixace? Spočítáme, jestli se vyplatí zůstat, nebo přejít – včetně nákladů na převod zástavy.'],
+  ['Prodej s hypotékou', 'Prodáváte nemovitost, na které vázne úvěr? Zařídíme souhlas banky, výmaz zástavy a vypořádání z úschovy.'],
+];
+const faq = [
+  { q: 'Kolik stojí zprostředkování hypotéky?', a: 'Pro klienta nic – odměnu platí banka, u které je úvěr sjednán. Sazba ani podmínky nejsou kvůli tomu horší, než kdybyste šli do banky přímo; často jsou lepší, protože porovnáváme víc bank.' },
+  { q: 'Jak dlouho trvá vyřízení?', a: 'Předschválení zvládneme do několika dnů, kompletní schválení včetně odhadu obvykle 2–4 týdny. Záleží na bance a na tom, jak rychle dodáte podklady.' },
+  { q: 'Jsem OSVČ, mám šanci?', a: 'Ano. Banky počítají příjem OSVČ různě (z obratu, ze základu daně, paušálem) – právě tady se porovnání nejvíc vyplatí. Řekneme vám, u které banky projdete a s jakou částkou.' },
+  { q: 'Musím u vás i kupovat nemovitost?', a: 'Ne. Financování řešíme pro kohokoli, kdo kupuje nebo refinancuje – i nemovitost od jiného makléře nebo přímo od majitele.' },
+];
+const faqLd = { '@type': 'FAQPage', mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
+const serviceLd = {
+  '@type': 'Service',
+  name: 'Zprostředkování hypotečního úvěru',
+  serviceType: 'Hypoteční úvěr a financování nemovitosti',
+  provider: { '@type': 'RealEstateAgent', name: site.name, url: site.url },
+  areaServed: site.broker.regions,
+};
+---
+<Base
+  title="Financování a hypoteční úvěr – porovnání bank, předschválení, refinancování"
+  description="Hypotéka bez obcházení bank: porovnání nabídek, předschválení před prohlídkou, refinancování. Pro kupující našich nemovitostí i pro kohokoli jiného. Vyškov, Brno, Praha."
+  jsonLd={[faqLd, serviceLd]}
+>
+  <section class="container-x grid gap-10 py-14 lg:grid-cols-12 lg:py-20">
+    <div class="lg:col-span-7">
+      <p class="eyebrow">Financování</p>
+      <h1 class="mt-3">Hypotéka, která sedí ke koupi. Ne naopak.</h1>
+      <p class="measure mt-5 text-lg text-ink-soft">Kupujete, prodáváte s úvěrem, nebo vám končí fixace? Porovnám nabídky bank, zařídím předschválení a pohlídám, aby čerpání sedělo s kupní smlouvou a úschovou.</p>
+      <ul class="mt-8 grid gap-x-8 gap-y-5 sm:grid-cols-2">
+        {pro.map(([t, x]) => (
+          <li class="border-t border-line pt-4">
+            <h2 class="text-[1.05rem] font-semibold">{t}</h2>
+            <p class="mt-1.5 text-[0.95rem] leading-relaxed text-ink-soft">{x}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <aside class="lg:col-span-5">
+      <div class="rounded-md border border-line bg-paper p-6 shadow-panel sm:p-7">
+        <p class="font-serif text-2xl font-medium" style="font-variation-settings:'opsz' 32">Nezávazná konzultace</p>
+        <p class="mt-1.5 text-[0.95rem] text-ink-soft">Napište, co kupujete nebo refinancujete a kolik potřebujete. Ozvu se do jednoho pracovního dne.</p>
+        <LeadForm formId="hypoteka" class="mt-6" compact submitLabel="Chci spočítat hypotéku" messageLabel="Co řešíte" messagePlaceholder="např. koupě bytu 3+kk ve Vyškově za 4,9 mil., vlastní zdroje 1 mil." />
+      </div>
+    </aside>
+  </section>
+
+  <section class="bg-beton">
+    <div class="container-x py-16 lg:py-20">
+      <p class="eyebrow">Jak to probíhá</p>
+      <h2 class="mt-3">Čtyři kroky od první otázky po čerpání</h2>
+      <Steps steps={steps} class="mt-10" />
+    </div>
+  </section>
+
+  <section class="container-x py-16 lg:py-20">
+    <div class="grid gap-10 lg:grid-cols-12">
+      <div class="lg:col-span-4">
+        <p class="eyebrow">Časté otázky</p>
+        <h2 class="mt-3">Na co se ptáte nejčastěji</h2>
+      </div>
+      <div class="lg:col-span-8"><Faq items={faq} /></div>
+    </div>
+  </section>
+
+  <CtaBand title="Nejdřív jen zjistit, kolik si můžete půjčit?" text="Zavolejte – na první odhad stačí patnáct minut a pár čísel." />
+</Base>

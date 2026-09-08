@@ -1,0 +1,21 @@
+---
+/** Výpis článků blogu – použitý na /blog/ i na stránkách kategorií. */
+import type { CollectionEntry } from 'astro:content';
+import { formatDatum, KATEGORIE_LABEL } from '@/lib/format';
+interface Props { posts: CollectionEntry<'blog'>[]; class?: string }
+const { posts, class: cls = '' } = Astro.props;
+---
+<ul class:list={['divide-y divide-line border-y border-line', cls]}>
+  {posts.map((p) => (
+    <li class="grid gap-3 py-8 md:grid-cols-12 md:gap-8">
+      <div class="md:col-span-3">
+        <p class="eyebrow">{KATEGORIE_LABEL[p.data.kategorie]}</p>
+        <p class="mt-1 text-sm text-mute">{formatDatum(p.data.datum)}{p.data.lokalita ? ` · ${p.data.lokalita}` : ''}</p>
+      </div>
+      <div class="md:col-span-9">
+        <h2 class="text-2xl"><a href={`/blog/${p.id}/`} class="hover:text-wine">{p.data.title}</a></h2>
+        <p class="measure mt-2 text-ink-soft">{p.data.perex}</p>
+      </div>
+    </li>
+  ))}
+</ul>

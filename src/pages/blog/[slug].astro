@@ -2,10 +2,10 @@
 import { getCollection, render } from 'astro:content';
 import Base from '@/layouts/Base.astro';
 import CtaBand from '@/components/CtaBand.astro';
-import { formatDatum } from '@/lib/format';
+import { formatDatum, KATEGORIE_LABEL } from '@/lib/format';
 import { site } from '@/data/site';
 export async function getStaticPaths() {
-  const posts = await getCollection('analyzy');
+  const posts = await getCollection('blog');
   return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
 }
 const { post } = Astro.props;
@@ -22,7 +22,7 @@ const ld = {
 <Base title={post.data.title} description={post.data.perex} jsonLd={[ld]}>
   <article class="container-x py-14 lg:py-20">
     <div class="mx-auto max-w-3xl">
-      <a href="/analyzy/" class="text-sm text-mute hover:text-ink hover:underline">Analýzy trhu</a>
+      <p class="eyebrow"><a href="/blog/" class="hover:text-ink">Blog</a> · <a href={`/blog/kategorie/${post.data.kategorie}/`} class="hover:text-ink">{KATEGORIE_LABEL[post.data.kategorie]}</a></p>
       <h1 class="mt-4">{post.data.title}</h1>
       <p class="mt-4 text-mute">{formatDatum(post.data.datum)} · {site.broker.name}{post.data.lokalita ? ` · ${post.data.lokalita}` : ''}</p>
       <p class="mt-6 text-xl leading-relaxed text-ink-soft">{post.data.perex}</p>

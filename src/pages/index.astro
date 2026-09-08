@@ -7,25 +7,21 @@ import PropertyCard from '@/components/PropertyCard.astro';
 import Testimonials from '@/components/Testimonials.astro';
 import PriceChart from '@/components/PriceChart.astro';
 import CtaBand from '@/components/CtaBand.astro';
-import { sortNemovitosti, formatDatum } from '@/lib/format';
-import { site } from '@/data/site';
+import { sortNemovitosti, formatDatum, KATEGORIE_LABEL } from '@/lib/format';
+import { site, sluzby } from '@/data/site';
 import heroCut from '@/assets/hero-makler-cut.png';
 import heroMakler from '@/assets/hero-makler.jpg';
 import krok1 from '@/assets/krok-1.jpg';
-import krok2 from '@/assets/krok-2.jpg';
 import krok3 from '@/assets/krok-3.jpg';
+import financovani from '@/assets/sluzba-financovani.jpg';
 
 const all = sortNemovitosti(await getCollection('nemovitosti'));
 const active = all.filter((n) => n.data.status === 'aktivni');
 const featured = [...active].sort((a, b) => Number(b.data.featured) - Number(a.data.featured)).slice(0, 9);
-const analyzy = (await getCollection('analyzy')).sort((a, b) => b.data.datum.getTime() - a.data.datum.getTime()).slice(0, 3);
+const analyzy = (await getCollection('blog')).sort((a, b) => b.data.datum.getTime() - a.data.datum.getTime()).slice(0, 3);
 const b = site.broker;
 
-const pilire = [
-  { img: krok1, num: '01', title: 'Ocenění', text: 'Cena, kterou obhájím čísly a ukážu vám podklady. Taková, se kterou se neprodává „po slevě“ za půl roku.' },
-  { img: krok2, num: '02', title: 'Příprava', text: 'Drobné opravy, vymalování, úklid a nastavení interiéru. Kupující vidí nemovitost tak, jak ji chce koupit.' },
-  { img: krok3, num: '03', title: 'Prodej', text: 'Profesionální fotky a inzerce, prohlídky i o víkendu, vyjednávání, právní servis s úschovou a předání klíčů.' },
-];
+const sluzbyImg = { prodej: krok3, oceneni: krok1, financovani } as const;
 ---
 <Base
   title="Realitní analytik – prodej a ocenění nemovitostí Vyškov, Brno, Praha"
@@ -116,24 +112,24 @@ const pilire = [
     </div>
   </section>
 
-  <!-- JAK PRODÁVÁME – tři kroky se čtvercovými fotografiemi -->
+  <!-- SLUŽBY – prodej, ocenění, financování (tři čtvercové fotografie) -->
   <section class="bg-beton">
     <div class="container-x py-20 lg:py-24">
       <div class="grid gap-6 lg:grid-cols-12 lg:items-end">
         <div class="lg:col-span-8">
-          <p class="eyebrow">Jak prodávám</p>
-          <h2 class="mt-3">Většina makléřů nemovitost nafotí a vloží do inzerce. Já ji nejdřív ocením a připravím.</h2>
-        </div>
-        <div class="lg:col-span-4 lg:text-right">
-          <a href="/jak-prodavame/" class="btn-ghost btn-ghost-dark">Jak prodej probíhá</a>
+          <p class="eyebrow">Služby</p>
+          <h2 class="mt-3">Prodej, ocenění a financování. Jeden člověk, který za to ručí.</h2>
         </div>
       </div>
       <ol class="mt-12 grid gap-8 sm:grid-cols-3">
-        {pilire.map((p) => (
-          <li>
-            <p class="eyebrow">{p.num}/ {p.title}</p>
-            <Image src={p.img} alt="" width={700} height={700} widths={[400, 700, 1000]} sizes="(min-width:1024px) 380px, (min-width:640px) 30vw, 90vw" format="webp" quality={76} loading="lazy" class="mt-3 aspect-square w-full object-cover" />
-            <p class="mt-4 text-[0.95rem] leading-relaxed text-ink-soft">{p.text}</p>
+        {sluzby.map((sl, i) => (
+          <li class="flex flex-col">
+            <p class="eyebrow">0{i + 1}/ {sl.title}</p>
+            <a href={sl.href} class="mt-3 block" tabindex="-1" aria-hidden="true">
+              <Image src={sluzbyImg[sl.slug]} alt="" width={700} height={700} widths={[400, 700, 1000]} sizes="(min-width:1024px) 380px, (min-width:640px) 30vw, 90vw" format="webp" quality={76} loading="lazy" class="aspect-square w-full object-cover" />
+            </a>
+            <p class="mt-4 text-[0.95rem] leading-relaxed text-ink-soft">{sl.text}</p>
+            <a href={sl.href} class="mt-4 inline-block text-[11px] font-medium uppercase tracking-[0.16em] text-ink underline decoration-line underline-offset-[6px] hover:decoration-ink">Více o službě</a>
           </li>
         ))}
       </ol>
@@ -175,21 +171,21 @@ const pilire = [
     <Testimonials class="mt-10" />
   </section>
 
-  <!-- ANALÝZY -->
+  <!-- BLOG -->
   <section class="bg-beton">
     <div class="container-x py-16 lg:py-20">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p class="eyebrow">Analýzy trhu</p>
-          <h2 class="mt-3">Z reálných prodejů, ne z tiskových zpráv</h2>
+          <p class="eyebrow">Blog</p>
+          <h2 class="mt-3">Analýzy trhu, rady k prodeji a novinky</h2>
         </div>
-        <a href="/analyzy/" class="eyebrow underline decoration-line underline-offset-[6px] hover:text-ink">Všechny analýzy</a>
+        <a href="/blog/" class="eyebrow underline decoration-line underline-offset-[6px] hover:text-ink">Všechny články</a>
       </div>
       <ul class="mt-10 grid gap-8 md:grid-cols-3">
         {analyzy.map((a) => (
           <li class="border-t border-ink/20 pt-5">
-            <p class="eyebrow">{formatDatum(a.data.datum)}{a.data.lokalita ? ` · ${a.data.lokalita}` : ''}</p>
-            <h3 class="mt-3"><a href={`/analyzy/${a.id}/`} class="hover:text-wine">{a.data.title}</a></h3>
+            <p class="eyebrow">{KATEGORIE_LABEL[a.data.kategorie]} · {formatDatum(a.data.datum)}</p>
+            <h3 class="mt-3"><a href={`/blog/${a.id}/`} class="hover:text-wine">{a.data.title}</a></h3>
             <p class="mt-2 text-[0.95rem] leading-relaxed text-ink-soft">{a.data.perex}</p>
           </li>
         ))}

@@ -7,6 +7,10 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://realitni-analytik.cz',
   trailingSlash: 'always',
+  redirects: {
+    '/analyzy': '/blog',
+    '/analyzy/[slug]': '/blog/[slug]',
+  },
   integrations: [sitemap()],
   image: {
     // sharp je výchozí služba; formáty a šířky řídíme v komponentách

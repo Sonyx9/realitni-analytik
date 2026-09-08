@@ -65,3 +65,6 @@ export function sortNemovitosti(list: Nemovitost[]): Nemovitost[] {
     return b.data.datum.getTime() - a.data.datum.getTime();
   });
 }
+
+
+export const KATEGORIE_LABEL: Record<string, string> = { analyza: 'Analýza trhu', rady: 'Rady k prodeji a koupi', novinky: 'Novinky' };

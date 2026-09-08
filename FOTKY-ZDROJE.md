@@ -22,3 +22,4 @@ nahradit fotografiemi od fotografa podle briefu.
 | Dům Bučovice (interiér) | rodinny-dum-bucovice/01 | photo-1560184897-67f4a3f9a7fa |
 | Chata Račice-Pístovice | chata-racice-pistovice/01 | photo-1779258321705-2ebb996a04a2 |
 | Pronájem 3+1 Brno Židenice | pronajem-byt-3plus1-brno-zidenice/01 | photo-1665249934445-1de680641f50 |
+| Služba Financování (podpis u stolu) | src/assets/sluzba-financovani.jpg | photo-1664463760781-f159dfe3af30 |

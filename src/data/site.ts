@@ -4,6 +4,12 @@
 export const site = {
   name: 'Realitní analytik',
   tagline: 'Prodej nemovitostí podložený daty',
+  /**
+   * Logo klienta (červené logo na bílém poli). Dodat jako SVG do public/images/ a vyplnit cestu –
+   * Logo.astro pak místo výchozí značky vykreslí obrázek. Světlá varianta (bílá) pro tmavou patičku.
+   */
+  logo: '', // TODO např. '/images/logo.svg'
+  logoLight: '', // TODO např. '/images/logo-white.svg'
   url: 'https://realitni-analytik.cz',
   locale: 'cs_CZ',
   broker: {
@@ -36,9 +42,17 @@ export const site = {
 
 export const nav = [
   { label: 'Nemovitosti', href: '/nemovitosti/' },
-  { label: 'Jak prodáváme', href: '/jak-prodavame/' },
-  { label: 'Ocenění zdarma', href: '/oceneni-nemovitosti-zdarma/' },
+  { label: 'Prodej', href: '/jak-prodavame/' },
+  { label: 'Ocenění', href: '/oceneni-nemovitosti-zdarma/' },
+  { label: 'Financování', href: '/financovani/' },
+  { label: 'Blog', href: '/blog/' },
   { label: 'O nás', href: '/o-nas/' },
-  { label: 'Analýzy trhu', href: '/analyzy/' },
   { label: 'Kontakt', href: '/kontakt/' },
+] as const;
+
+/** Služby – pro sekci na úvodu a strukturovaná data. */
+export const sluzby = [
+  { slug: 'prodej', title: 'Prodej nemovitosti', href: '/jak-prodavame/', text: 'Ocenění z dat, příprava nemovitosti, profesionální prezentace, prohlídky, právní servis s úschovou a předání. Provize až po prodeji.' },
+  { slug: 'oceneni', title: 'Ocenění nemovitosti', href: '/oceneni-nemovitosti-zdarma/', text: 'Za kolik se vaše nemovitost skutečně prodá – s podklady, které vám ukážu, ne odhad od stolu. Zdarma, do 2 pracovních dnů, bez závazku.' },
+  { slug: 'financovani', title: 'Financování a hypotéka', href: '/financovani/', text: 'Porovnání nabídek bank, předschválení úvěru před prohlídkou, refinancování. Pro kupující našich nemovitostí i pro kohokoli jiného.' },
 ] as const;
