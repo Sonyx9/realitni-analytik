@@ -6,6 +6,9 @@ import LeadForm from '@/components/LeadForm.astro';
 import BrokerCard from '@/components/BrokerCard.astro';
 import PropertyCard from '@/components/PropertyCard.astro';
 import CtaBand from '@/components/CtaBand.astro';
+import MapEmbed from '@/components/MapEmbed.astro';
+import LazyEmbed from '@/components/LazyEmbed.astro';
+import ShareButton from '@/components/ShareButton.astro';
 import { formatCena, formatPlocha, STATUS_LABEL, TYP_LABEL, VLASTNICTVI_LABEL, sortNemovitosti, formatDatum } from '@/lib/format';
 import { site } from '@/data/site';
 
@@ -44,10 +47,6 @@ const params = [
   ...d.parametry,
   { label: 'ID nabídky', value: d.externiId ?? item.id },
 ].filter(Boolean) as { label: string; value: string }[];
-
-const mapHref = d.lokalita.lat && d.lokalita.lng
-  ? `https://mapy.cz/zakladni?x=${d.lokalita.lng}&y=${d.lokalita.lat}&z=15`
-  : `https://mapy.cz/zakladni?q=${encodeURIComponent(d.lokalita.obec)}`;
 
 const listingLd = {
   '@type': 'RealEstateListing',
@@ -183,23 +182,20 @@ const breadcrumbLd = {
         <section class="mt-12">
           <h2 class="text-2xl">Kde to je</h2>
           <p class="mt-3 text-ink-soft">{d.lokalita.obec}{d.lokalita.castObce ? ` – ${d.lokalita.castObce}` : ''}, okres {d.lokalita.okres}, {d.lokalita.kraj}. Přesnou adresu sdělíme zájemcům před prohlídkou.</p>
-          <!-- Programátor: nahradit embedem Mapy.cz (iframe/Leaflet) s pinem na přibližnou polohu – viz zadání -->
-          <a href={mapHref} target="_blank" rel="noopener" class="mt-4 flex aspect-[16/7] items-center justify-center rounded-sm border border-line bg-beton text-ink-soft hover:bg-beton-deep">
-            Zobrazit na Mapy.cz
-          </a>
+          <MapEmbed lat={d.lokalita.lat} lng={d.lokalita.lng} obec={d.lokalita.obec} />
         </section>
 
         {(d.video || d.prohlidka3d) && (
           <section class="mt-12">
             <h2 class="text-2xl">Prohlídka na dálku</h2>
-            <div class="mt-4 flex flex-wrap gap-3">
-              {d.video && <a href={d.video} target="_blank" rel="noopener" class="btn btn-outline">Videoprohlídka</a>}
-              {d.prohlidka3d && <a href={d.prohlidka3d} target="_blank" rel="noopener" class="btn btn-outline">3D prohlídka</a>}
-            </div>
+            {d.video && <LazyEmbed url={d.video} kind="video" />}
+            {d.prohlidka3d && <LazyEmbed url={d.prohlidka3d} kind="3d" class="mt-6" />}
           </section>
         )}
 
-        <p class="mt-10 text-sm text-mute">Zveřejněno {formatDatum(d.datum)}. Údaje jsou převzaty z podkladů vlastníka a veřejných rejstříků; před podpisem rezervační smlouvy vše ověřujeme.</p>
+        <ShareButton title={d.title} class="mt-12 border-t border-line pt-6" />
+
+        <p class="mt-8 text-sm text-mute">Zveřejněno {formatDatum(d.datum)}. Údaje jsou převzaty z podkladů vlastníka a veřejných rejstříků; před podpisem rezervační smlouvy vše ověřujeme.</p>
       </div>
 
       <!-- SIDEBAR: kontakt / mám zájem -->
@@ -260,8 +256,13 @@ const breadcrumbLd = {
       img.src = srcs[i];
       counter.textContent = `${i + 1} / ${srcs.length}`;
     };
-    items.forEach((a, idx) => a.addEventListener('click', (e) => { e.preventDefault(); show(idx); dlg.showModal(); }));
-    gallery.querySelector('[data-gallery-all]')?.addEventListener('click', () => { show(0); dlg.showModal(); });
+    const open = (idx: number) => {
+      show(idx);
+      dlg.showModal();
+      window.dataLayer?.push({ event: 'gallery_open', page: location.pathname, photo_index: idx + 1 });
+    };
+    items.forEach((a, idx) => a.addEventListener('click', (e) => { e.preventDefault(); open(idx); }));
+    gallery.querySelector('[data-gallery-all]')?.addEventListener('click', () => open(0));
     dlg.querySelector('[data-lb-close]')?.addEventListener('click', () => dlg.close());
     dlg.querySelector('[data-lb-prev]')?.addEventListener('click', () => show(i - 1));
     dlg.querySelector('[data-lb-next]')?.addEventListener('click', () => show(i + 1));

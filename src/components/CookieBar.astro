@@ -3,7 +3,8 @@
  * Minimální cookie lišta. Výchozí stav = odmítnuto (Consent Mode v2 "denied").
  * Po "Povolit" se nastaví souhlas a načte GTM. ID kontejneru doplní programátor.
  */
-const GTM_ID = 'GTM-XXXXXXX'; // TODO
+import { site } from '@/data/site';
+const GTM_ID = site.gtmId;
 ---
 <div
   id="cookie-bar"
@@ -33,7 +34,7 @@ const GTM_ID = 'GTM-XXXXXXX'; // TODO
       analytics_storage: 'denied', wait_for_update: 500,
     });
     function loadGtm() {
-      if (!GTM_ID || GTM_ID.includes('XXXX') || document.getElementById('gtm-js')) return;
+      if (!GTM_ID || document.getElementById('gtm-js')) return;
       const s = document.createElement('script');
       s.id = 'gtm-js'; s.async = true;
       s.src = 'https://www.googletagmanager.com/gtm.js?id=' + GTM_ID;

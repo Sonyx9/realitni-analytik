@@ -66,6 +66,9 @@ const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-grid>
       {aktivni.map((n, i) => <PropertyCard item={n} eager={i < 3} />)}
     </div>
+    <div class="mt-12 text-center" hidden data-more-wrap>
+      <button type="button" class="btn-ghost btn-ghost-dark" data-more>Načíst další</button>
+    </div>
     <div hidden data-empty class="rounded-md border border-dashed border-line px-6 py-14 text-center">
       <p class="text-lg font-medium">Tomuto výběru zatím nic neodpovídá.</p>
       <p class="mt-2 text-ink-soft">Napište nám, co hledáte – většina nemovitostí se prodá dřív, než se dostane do inzerce.</p>
@@ -99,55 +102,126 @@ const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
 </Base>
 
 <script>
+  /**
+   * Filtry, řazení a postupné načítání běží na klientu nad všemi kartami, které vykreslil build.
+   * Díky tomu filtr platí pro celou nabídku (ne jen pro jednu stránku) a zůstává jedna URL.
+   * Bez JS jsou vidět všechny karty – tlačítko „Načíst další“ zapíná až skript.
+   */
+  const PAGE_SIZE = 24;
+
   const root = document.querySelector<HTMLElement>('[data-filters]');
   const grid = document.querySelector<HTMLElement>('[data-grid]');
   const empty = document.querySelector<HTMLElement>('[data-empty]');
   const count = document.querySelector<HTMLElement>('[data-result-count]');
+  const moreWrap = document.querySelector<HTMLElement>('[data-more-wrap]');
+  const moreBtn = document.querySelector<HTMLButtonElement>('[data-more]');
+
   if (root && grid) {
-    const state: Record<string, string> = { typ: '', nabidka: '', kraj: '' };
-    const params = new URLSearchParams(location.search);
-    for (const k of Object.keys(state)) state[k] = params.get(k) ?? '';
-    let sort = params.get('sort') ?? 'datum-desc';
+    const gridEl = grid;
+    const rootEl = root;
+    const cards = [...gridEl.querySelectorAll<HTMLElement>('article')];
+    const FILTER_KEYS = ['typ', 'nabidka', 'kraj'] as const;
+    type FilterKey = (typeof FILTER_KEYS)[number];
 
-    const cards = () => [...grid.querySelectorAll<HTMLElement>('article')];
+    const state: Record<FilterKey, string> = { typ: '', nabidka: '', kraj: '' };
+    let sort = 'datum-desc';
+    let limit = PAGE_SIZE;
 
-    function apply() {
-      let visible = 0;
-      for (const c of cards()) {
-        const ok = Object.entries(state).every(([k, v]) => !v || c.dataset[k] === v);
-        c.hidden = !ok;
-        if (ok) visible++;
-      }
-      const list = cards().filter((c) => !c.hidden);
-      list.sort((a, b) => {
-        if (sort === 'datum-desc') return b.dataset.datum!.localeCompare(a.dataset.datum!);
+    /** Načte stav z aktuální URL – používá se při startu i po tlačítku Zpět. */
+    function readUrl() {
+      const params = new URLSearchParams(location.search);
+      for (const k of FILTER_KEYS) state[k] = params.get(k) ?? '';
+      sort = params.get('sort') ?? 'datum-desc';
+      limit = PAGE_SIZE;
+    }
+
+    function writeUrl(push: boolean) {
+      const q = new URLSearchParams();
+      for (const k of FILTER_KEYS) if (state[k]) q.set(k, state[k]);
+      if (sort !== 'datum-desc') q.set('sort', sort);
+      const url = q.toString() ? `?${q}` : location.pathname;
+      if (push) history.pushState(null, '', url);
+      else history.replaceState(null, '', url);
+    }
+
+    function render() {
+      const matched = cards.filter((c) => FILTER_KEYS.every((k) => !state[k] || c.dataset[k] === state[k]));
+
+      matched.sort((a, b) => {
+        if (sort === 'datum-desc') return (b.dataset.datum ?? '').localeCompare(a.dataset.datum ?? '');
+        // nemovitosti bez ceny ("na vyžádání") řadíme vždy na konec
         const ca = a.dataset.cena ? Number(a.dataset.cena) : Infinity;
         const cb = b.dataset.cena ? Number(b.dataset.cena) : Infinity;
         return sort === 'cena-asc' ? ca - cb : cb - ca;
       });
-      list.forEach((c) => grid.appendChild(c));
-      if (empty) empty.hidden = visible > 0;
-      if (count) count.textContent = `Zobrazeno ${visible} nemovitostí`;
-      // stav do URL (sdílení filtru, zpět v historii)
-      const q = new URLSearchParams();
-      for (const [k, v] of Object.entries(state)) if (v) q.set(k, v);
-      if (sort !== 'datum-desc') q.set('sort', sort);
-      history.replaceState(null, '', q.toString() ? `?${q}` : location.pathname);
-      // aktivní chipy
-      root!.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((b) => {
-        b.setAttribute('aria-pressed', String(state[b.dataset.filter!] === b.dataset.value));
+
+      for (const c of cards) c.hidden = true;
+      matched.slice(0, limit).forEach((c) => {
+        c.hidden = false;
+        gridEl.appendChild(c);
       });
+
+      const shown = Math.min(limit, matched.length);
+      if (empty) empty.hidden = matched.length > 0;
+      if (count) count.textContent = `Zobrazeno ${shown} z ${matched.length} nemovitostí`;
+      if (moreWrap && moreBtn) {
+        const zbyva = matched.length - shown;
+        moreWrap.hidden = zbyva <= 0;
+        moreBtn.textContent = `Načíst další (${zbyva})`;
+      }
+
+      rootEl.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((b) => {
+        b.setAttribute('aria-pressed', String(state[b.dataset.filter as FilterKey] === b.dataset.value));
+      });
+      rootEl.querySelectorAll<HTMLSelectElement>('[data-filter-select]').forEach((s) => {
+        s.value = state[s.dataset.filterSelect as FilterKey] ?? '';
+      });
+      const sortSel = rootEl.querySelector<HTMLSelectElement>('[data-sort]');
+      if (sortSel) sortSel.value = sort;
     }
 
-    root.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((b) =>
-      b.addEventListener('click', () => { state[b.dataset.filter!] = b.dataset.value!; apply(); })
+    /** Změna filtru uživatelem: nový záznam v historii (Zpět vrátí předchozí filtr) + měření. */
+    function change(kind: string, value: string) {
+      limit = PAGE_SIZE;
+      render();
+      writeUrl(true);
+      window.dataLayer?.push({ event: 'filter_change', filter_type: kind, filter_value: value || 'vse' });
+    }
+
+    rootEl.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const key = b.dataset.filter as FilterKey;
+        state[key] = b.dataset.value ?? '';
+        change(key, state[key]);
+      })
     );
-    root.querySelectorAll<HTMLSelectElement>('[data-filter-select]').forEach((s) => {
-      s.value = state[s.dataset.filterSelect!] ?? '';
-      s.addEventListener('change', () => { state[s.dataset.filterSelect!] = s.value; apply(); });
+    rootEl.querySelectorAll<HTMLSelectElement>('[data-filter-select]').forEach((s) =>
+      s.addEventListener('change', () => {
+        const key = s.dataset.filterSelect as FilterKey;
+        state[key] = s.value;
+        change(key, state[key]);
+      })
+    );
+    rootEl.querySelector<HTMLSelectElement>('[data-sort]')?.addEventListener('change', (e) => {
+      sort = (e.currentTarget as HTMLSelectElement).value;
+      change('sort', sort);
     });
-    const sortEl = root.querySelector<HTMLSelectElement>('[data-sort]');
-    if (sortEl) { sortEl.value = sort; sortEl.addEventListener('change', () => { sort = sortEl.value; apply(); }); }
-    apply();
+
+    moreBtn?.addEventListener('click', () => {
+      limit += PAGE_SIZE;
+      render();
+      // fokus na první nově odkrytou kartu, ať klávesnice nespadne na začátek výpisu
+      const prvniNovy = cards.filter((c) => !c.hidden)[limit - PAGE_SIZE];
+      prvniNovy?.querySelector('a')?.focus({ preventScroll: true });
+    });
+
+    window.addEventListener('popstate', () => {
+      readUrl();
+      render();
+    });
+
+    readUrl();
+    render();
+    writeUrl(false);
   }
 </script>

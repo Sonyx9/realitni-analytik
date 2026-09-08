@@ -1,0 +1,13 @@
+# Konfigurace Cloudflare Pages.
+#
+# Hlavně kvůli `compatibility_date` – bez ní si Cloudflare bere aktuální datum a chování
+# běhového prostředí se může časem změnit pod rukama. Datum měňte vědomě a po otestování.
+#
+# Proměnné prostředí (MAIL_TO, RESEND_API_KEY, TURNSTILE_SECRET…) sem NEPATŘÍ –
+# nastavují se v Cloudflare Pages → Settings → Environment variables jako Secret.
+# Binding KV pro rate limit (LEADS_KV) taktéž: Settings → Functions → KV namespace bindings.
+# Popis všech proměnných je v .dev.vars.example a v NASAZENI.md.
+
+name = "realitni-analytik"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-09-08"

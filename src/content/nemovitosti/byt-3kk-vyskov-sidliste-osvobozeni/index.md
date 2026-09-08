@@ -27,6 +27,10 @@ parametry:
   - { label: "Voda", value: "veřejný vodovod" }
   - { label: "Měsíční náklady", value: "cca 4 200 Kč (fond oprav + zálohy)" }
 obrazky: ["./01.webp", "./02.webp", "./03.webp", "./04.webp"]
+obrazkyAlt: ["Obývací pokoj s okny na západ", "Kuchyňská linka se spotřebiči", "Koupelna po rekonstrukci", "Lodžie s výhledem do vnitrobloku"]
+# ukázkové odkazy – ukazují, jak vypadá videoprohlídka a 3D prohlídka na detailu
+video: "https://www.youtube.com/watch?v=aqz-KE-bpKQ"
+prohlidka3d: "https://my.matterport.com/show/?m=SxQL3iGyoDo"
 datum: 2026-08-28
 featured: true
 externiId: "RA-2026-014"

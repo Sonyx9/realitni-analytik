@@ -7,13 +7,28 @@ import { site } from '@/data/site';
     <div class="mx-auto max-w-xl text-center">
       <h1>Máme to. Ozveme se.</h1>
       <p class="mt-5 text-lg text-ink-soft" data-thanks-text>Zprávu jsme přijali. Odpovíme do jednoho pracovního dne – u ocenění do dvou.</p>
+      <p class="mt-6 text-[0.95rem] text-mute">Potvrzení jsme poslali i na váš e-mail. Kdyby nedorazilo do pár minut, mrkněte do spamu.</p>
       <p class="mt-8 text-ink-soft">Spěchá to? <a href={site.broker.phoneHref} class="font-semibold text-ink hover:text-wine">{site.broker.phone}</a></p>
-      <a href="/" class="btn btn-outline mt-10">Zpět na úvod</a>
+      <div class="mt-10 flex flex-wrap justify-center gap-3">
+        <a href="/nemovitosti/" class="btn btn-outline">Prohlédnout nabídku</a>
+        <a href="/blog/" class="btn btn-outline">Číst blog</a>
+      </div>
     </div>
   </section>
   <script>
     // Konverzní událost pro GA4/Ads – čte typ z URL (?typ=oceneni|zajem|kontakt|koupe|hypoteka)
     const typ = new URLSearchParams(location.search).get('typ') ?? 'obecne';
+
+    const TEXTY: Record<string, string> = {
+      oceneni: 'Žádost o ocenění máme. Projdeme realizované prodeje ve vašem okolí a ozveme se do 2 pracovních dnů – když bude potřeba něco upřesnit, zavoláme.',
+      zajem: 'Dotaz k nemovitosti máme. Ozveme se do jednoho pracovního dne a domluvíme termín prohlídky.',
+      kontakt: 'Zprávu jsme přijali. Odpovíme do jednoho pracovního dne.',
+      koupe: 'Poptávku máme. Zapíšeme si, co hledáte, a dáme vědět, jakmile budeme mít odpovídající nemovitost – často ještě před zveřejněním v inzerci.',
+      hypoteka: 'Dotaz k financování máme. Ozveme se do jednoho pracovního dne a projdeme spolu, co je pro vás dosažitelné.',
+    };
+    const el = document.querySelector('[data-thanks-text]');
+    if (el && TEXTY[typ]) el.textContent = TEXTY[typ];
+
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({ event: 'lead_thankyou', lead_type: typ });
   </script>

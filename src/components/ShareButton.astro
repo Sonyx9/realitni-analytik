@@ -1,0 +1,44 @@
+---
+/**
+ * Sdílení nemovitosti: nativní systémové sdílení (mobil), jinak zkopírování odkazu.
+ * Vedle je odkaz „Poslat na e-mail“ – mailto s předvyplněným předmětem a odkazem.
+ */
+interface Props { title: string; class?: string }
+const { title, class: cls = '' } = Astro.props;
+const url = new URL(Astro.url.pathname, Astro.site).toString();
+const mailto = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`Našel jsem tuhle nemovitost, co ty na to?\n\n${title}\n${url}`)}`;
+---
+<div class:list={['flex flex-wrap items-center gap-x-5 gap-y-2', cls]} data-share data-url={url} data-title={title}>
+  <button type="button" class="text-[11px] font-medium uppercase tracking-[0.16em] text-ink underline decoration-line underline-offset-[6px] hover:decoration-ink" data-share-btn>
+    Sdílet
+  </button>
+  <a href={mailto} class="text-[11px] font-medium uppercase tracking-[0.16em] text-ink underline decoration-line underline-offset-[6px] hover:decoration-ink">
+    Poslat na e-mail
+  </a>
+  <span class="text-sm text-ok" hidden data-share-done role="status">Odkaz zkopírován</span>
+</div>
+
+<script>
+  const box = document.querySelector<HTMLElement>('[data-share]');
+  if (box) {
+    const btn = box.querySelector<HTMLButtonElement>('[data-share-btn]')!;
+    const done = box.querySelector<HTMLElement>('[data-share-done]')!;
+    const url = box.dataset.url!;
+    const title = box.dataset.title!;
+
+    btn.addEventListener('click', async () => {
+      window.dataLayer?.push({ event: 'share_click', page: location.pathname });
+      if (navigator.share) {
+        // Zrušení dialogu uživatelem není chyba – jen nic dalšího neděláme.
+        try { await navigator.share({ title, url }); return; } catch { return; }
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+        done.hidden = false;
+        setTimeout(() => { done.hidden = true; }, 3000);
+      } catch {
+        window.prompt('Zkopírujte odkaz:', url);
+      }
+    });
+  }
+</script>

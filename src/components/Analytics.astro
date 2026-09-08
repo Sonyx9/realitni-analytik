@@ -1,0 +1,19 @@
+---
+/**
+ * Měření, které nepatří ke konkrétní komponentě: uložení UTM parametrů ze vstupní stránky
+ * a události, které se sledují na celém webu (klik na telefon).
+ * Data se jen skládají do dataLayeru – ten odchází do GTM až po souhlasu s cookies.
+ */
+---
+<script>
+  import { captureUtm } from '@/lib/forms';
+
+  window.dataLayer = window.dataLayer || [];
+  captureUtm();
+
+  // Klik na telefon – hlavní offline konverze. Delegovaně, ať to platí i pro odkazy v patičce a menu.
+  document.addEventListener('click', (e) => {
+    const link = (e.target as HTMLElement | null)?.closest?.('a[href^="tel:"]');
+    if (link) window.dataLayer?.push({ event: 'call_click', page: location.pathname });
+  });
+</script>

@@ -1,0 +1,24 @@
+# Proměnné prostředí formulářového endpointu (functions/api/lead.ts).
+#
+# Místní vývoj: zkopírujte tento soubor jako `.dev.vars` a vyplňte.
+#               `.dev.vars` je v .gitignore – tajné klíče nikdy nepatří do repozitáře.
+# Produkce:     stejné klíče vyplňte v Cloudflare Pages → Settings → Environment variables.
+
+# --- E-mail (povinné) ---------------------------------------------------------
+# Kam chodí leady. Více adres oddělte čárkou.
+MAIL_TO=petr@realitni-analytik.cz
+# Kopie (agentura).
+MAIL_CC=lukas.koula@digitance.cz
+# Odesílatel. Doména musí být ověřená v Resendu, jinak Resend odmítne odeslání.
+MAIL_FROM=Realitní analytik <web@realitni-analytik.cz>
+# API klíč z resend.com → API Keys (oprávnění „Sending access“ stačí).
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
+
+# --- Ochrana proti spamu (doporučené) -----------------------------------------
+# Tajný klíč widgetu z Cloudflare → Turnstile. Veřejný site key patří do src/data/site.ts.
+# Bez tohoto klíče se ověření přeskočí – formuláře pak chrání jen honeypot a rate limit.
+TURNSTILE_SECRET=0x4xxxxxxxxxxxxxxxxxxxxxxxxx
+
+# --- Zápis leadů do tabulky (nepovinné) ---------------------------------------
+# URL nasazeného Google Apps Scriptu (webová aplikace, přístup „kdokoli“) nebo Airtable webhooku.
+SHEETS_WEBHOOK_URL=https://script.google.com/macros/s/xxxxxxxx/exec

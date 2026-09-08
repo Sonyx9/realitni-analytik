@@ -1,4 +1,39 @@
-# Přesměrování (Cloudflare Pages / Netlify). Staré URL současného webu doplnit podle kap. 3 zadání.
+# Přesměrování pro Cloudflare Pages / Netlify. Pravidla se vyhodnocují shora dolů
+# a uplatní se až tehdy, když adrese neodpovídá žádná vygenerovaná stránka.
+
+# --- Přejmenování sekce Analýzy trhu na Blog (kap. 3 zadání) ---
 /analyzy            /blog                301
 /analyzy/*          /blog/:splat         301
 /analyzy/rss.xml    /blog/rss.xml        301
+
+# --- Starý WordPress web (kap. 3 zadání) ---
+/about              /o-nas/              301
+/about/*            /o-nas/              301
+/services           /jak-prodavame/      301
+/services/*         /jak-prodavame/      301
+/projects           /nemovitosti/        301
+/projects/*         /nemovitosti/        301
+/contact-us         /kontakt/            301
+/contact-us/*       /kontakt/            301
+
+# Typické adresy šablony a WordPressu, které nemají na novém webu obdobu
+/blog/page/*        /blog/               301
+/category/*         /blog/               301
+/tag/*              /blog/               301
+/author/*           /o-nas/              301
+/feed               /blog/rss.xml        301
+/feed/*             /blog/rss.xml        301
+/wp-content/*       /                    301
+/wp-includes/*      /                    301
+/wp-admin           /                    301
+/wp-admin/*         /                    301
+/wp-login.php       /                    301
+/xmlrpc.php         /                    301
+
+# --- Poslední záchytné pravidlo (záměrně vypnuté) ---
+# Zadání (kap. 3) počítá s tím, že „vše ostatní ze starého webu → /“. Pravidlo níže to udělá,
+# ale zároveň vypne stránku 404 pro CELÝ web: každý překlep v odkazu i každá zaniklá adresa
+# skončí mlčky na úvodu a Search Console to hlásí jako soft 404.
+# Doporučený postup: nechat vypnuté, po měsíci provozu se podívat do Search Console →
+# Stránky → Nenalezeno, a pokud tam budou reálné staré adresy, dopsat je výše jmenovitě.
+# /*                /                    301

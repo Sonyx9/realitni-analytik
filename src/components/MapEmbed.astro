@@ -1,0 +1,82 @@
+---
+/**
+ * Mapa polohy nemovitosti (Mapy.cz).
+ *
+ * Iframe je třetí strana, proto se nenačítá sám od sebe – zobrazí se až na kliknutí
+ * (nebo hned, pokud návštěvník předtím udělil souhlas s cookies). Souřadnice zaokrouhlujeme
+ * na 3 desetinná místa (~100 m), přesnou adresu nezveřejňujeme.
+ */
+interface Props {
+  lat?: number;
+  lng?: number;
+  /** Náhradní dotaz, když nemovitost nemá GPS – vyhledá se obec. */
+  obec: string;
+  class?: string;
+}
+const { lat, lng, obec, class: cls = '' } = Astro.props;
+
+const r3 = (n: number) => Math.round(n * 1000) / 1000;
+const hasGps = typeof lat === 'number' && typeof lng === 'number';
+const x = hasGps ? r3(lng!) : undefined;
+const y = hasGps ? r3(lat!) : undefined;
+
+/** Vložená mapa s pinem na přibližné poloze. */
+const frameSrc = hasGps
+  ? `https://frame.mapy.cz/zakladni?x=${x}&y=${y}&z=15&source=coor&id=${x}%2C${y}`
+  : `https://frame.mapy.cz/zakladni?query=${encodeURIComponent(obec)}&z=13`;
+
+/** Odkaz do plné mapy (nová záložka). */
+const mapHref = hasGps
+  ? `https://mapy.cz/zakladni?x=${x}&y=${y}&z=15&source=coor&id=${x}%2C${y}`
+  : `https://mapy.cz/zakladni?q=${encodeURIComponent(obec)}`;
+---
+<div class:list={['mt-4', cls]} data-map data-src={frameSrc}>
+  <div class="relative aspect-[16/9] overflow-hidden rounded-sm border border-line bg-beton sm:aspect-[16/7]" data-map-slot>
+    <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
+      <p class="text-[0.95rem] text-ink-soft">
+        Mapa se načítá ze serveru Mapy.cz. Zobrazením se připojíte ke službě třetí strany.
+      </p>
+      <button type="button" class="btn btn-outline bg-paper" data-map-load>Zobrazit mapu</button>
+    </div>
+  </div>
+  <a
+    href={mapHref}
+    target="_blank"
+    rel="noopener"
+    class="mt-3 inline-block text-[11px] font-medium uppercase tracking-[0.16em] text-ink underline decoration-line underline-offset-[6px] hover:decoration-ink"
+    data-map-link
+  >Otevřít na Mapy.cz</a>
+</div>
+
+<script>
+  const box = document.querySelector<HTMLElement>('[data-map]');
+  if (box) {
+    const slot = box.querySelector<HTMLElement>('[data-map-slot]')!;
+    const src = box.dataset.src!;
+
+    function load() {
+      if (slot.querySelector('iframe')) return;
+      const frame = document.createElement('iframe');
+      frame.src = src;
+      frame.title = 'Mapa – přibližná poloha nemovitosti';
+      frame.loading = 'lazy';
+      frame.referrerPolicy = 'no-referrer-when-downgrade';
+      frame.className = 'absolute inset-0 h-full w-full border-0';
+      slot.replaceChildren(frame);
+    }
+
+    box.querySelector('[data-map-load]')?.addEventListener('click', () => {
+      load();
+      window.dataLayer?.push({ event: 'map_show', page: location.pathname });
+    });
+
+    // Kdo už souhlasil s cookies, nemusí klikat podruhé.
+    try {
+      if (localStorage.getItem('ra-consent') === 'granted') load();
+    } catch {}
+
+    box.querySelector('[data-map-link]')?.addEventListener('click', () => {
+      window.dataLayer?.push({ event: 'map_click', page: location.pathname });
+    });
+  }
+</script>

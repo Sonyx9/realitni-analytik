@@ -1,12 +1,100 @@
 ---
+/**
+ * Právní text dodá klient / právník (kap. 13 zadání).
+ * Technický soupis níž je podklad pro něj – popisuje, co web skutečně ukládá a kam se připojuje.
+ * Udržujte ho v souladu s kódem: mění se při každém přidání služby třetí strany.
+ */
 import Base from '@/layouts/Base.astro';
 import { site } from '@/data/site';
+
+const uloziste = [
+  {
+    nazev: 'ra-consent',
+    typ: 'localStorage (technické, nutné)',
+    ucel: 'Pamatuje si vaši volbu v liště cookies, aby se neptala při každé návštěvě.',
+    doba: 'Do smazání dat prohlížeče.',
+  },
+  {
+    nazev: 'ra-utm',
+    typ: 'sessionStorage (technické, nutné)',
+    ucel: 'Uchová informaci, odkud jste na web přišli, aby se dala připojit k odeslanému formuláři.',
+    doba: 'Do zavření karty prohlížeče.',
+  },
+  {
+    nazev: 'Google Analytics 4 / Google Ads (přes Google Tag Manager)',
+    typ: 'analytické a marketingové cookies',
+    ucel: 'Měření návštěvnosti a účinnosti reklamy.',
+    doba: 'Načte se až po vašem souhlasu; bez něj se skript vůbec nestáhne (Consent Mode v2, výchozí stav „odmítnuto“).',
+  },
+  {
+    nazev: 'Cloudflare Turnstile',
+    typ: 'technické, nutné',
+    ucel: 'Ověření, že formulář neodesílá robot. Načte se až ve chvíli, kdy začnete vyplňovat formulář.',
+    doba: 'Krátkodobé, po dobu ověření.',
+  },
+];
+
+const treti = [
+  ['Cloudflare (Pages, Turnstile)', 'hosting webu a ochrana formulářů proti spamu'],
+  ['Resend', 'odeslání e-mailu s vaší poptávkou makléři a potvrzení vám'],
+  ['Google (Tag Manager, Analytics, Ads)', 'měření návštěvnosti – jen s vaším souhlasem'],
+  ['Seznam.cz (Mapy.cz)', 'mapa u nemovitosti – načte se až po kliknutí na „Zobrazit mapu“'],
+  ['Google (YouTube)', 'videoprohlídka – načte se až po kliknutí na přehrávač'],
+];
 ---
-<Base title="Cookies" description="Cookies – Realitní analytik." noindex>
+<Base title="Cookies" description="Jaké cookies a úložiště web používá a kdy se načítají služby třetích stran." noindex>
   <section class="container-x py-14 lg:py-20">
     <div class="prose-ra mx-auto max-w-3xl text-[1.05rem] leading-relaxed">
       <h1>Cookies</h1>
-      <p class="mt-6"><strong>TODO – dodá klient / právník.</strong> Správce: {site.broker.name}, IČO {site.broker.ico}, {site.broker.address}. Text musí odpovídat GDPR (účel, právní základ, doba uchování, příjemci – poskytovatel formulářů, hosting, Google Analytics, práva subjektu) a zákonu o realitním zprostředkování (informace pro spotřebitele: provize, pojištění, mimosoudní řešení sporů – ČOI).</p>
+
+      <p class="mt-6 rounded-md border border-line bg-beton px-5 py-4 text-[0.95rem]">
+        <strong>TODO – právní text dodá klient / právník.</strong> Správce: {site.broker.name}, IČO {site.broker.ico},
+        {site.broker.address}. Text musí odpovídat GDPR (účel, právní základ, doba uchování, příjemci, práva subjektu)
+        a § 89 zákona o elektronických komunikacích. Tabulky níž jsou technický soupis toho, co web skutečně dělá –
+        slouží jako podklad a mají v textu zůstat.
+      </p>
+
+      <h2>Co web ukládá do vašeho prohlížeče</h2>
+      <p>Bez souhlasu web neukládá nic, co by sloužilo k měření nebo reklamě.</p>
+
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full border-collapse text-left text-[0.95rem]">
+          <thead>
+            <tr class="border-y border-line">
+              <th class="py-3 pr-4 font-medium">Název</th>
+              <th class="py-3 pr-4 font-medium">Druh</th>
+              <th class="py-3 pr-4 font-medium">K čemu je</th>
+              <th class="py-3 font-medium">Jak dlouho</th>
+            </tr>
+          </thead>
+          <tbody>
+            {uloziste.map((u) => (
+              <tr class="border-b border-line align-top">
+                <td class="py-3 pr-4 font-medium">{u.nazev}</td>
+                <td class="py-3 pr-4 text-ink-soft">{u.typ}</td>
+                <td class="py-3 pr-4 text-ink-soft">{u.ucel}</td>
+                <td class="py-3 text-ink-soft">{u.doba}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Komu se mohou vaše údaje dostat</h2>
+      <ul>
+        {treti.map(([kdo, proc]) => <li><strong>{kdo}</strong> – {proc}</li>)}
+      </ul>
+
+      <h2>Jak volbu změnit</h2>
+      <p>
+        Souhlas můžete kdykoli vzít zpět: v prohlížeči smažte data uložená tímto webem
+        (Nastavení → Soukromí → Data webů) a při další návštěvě se lišta zeptá znovu.
+        Technické položky z první tabulky vypnout nejde – bez nich by web nefungoval.
+      </p>
+
+      <p class="mt-8 text-[0.95rem] text-mute">
+        Máte k tomu dotaz? Napište na <a href={`mailto:${site.broker.email}`}>{site.broker.email}</a>.
+      </p>
     </div>
   </section>
 </Base>

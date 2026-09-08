@@ -1,0 +1,24 @@
+# Hlavičky pro Cloudflare Pages / Netlify. Platí všechna vyhovující pravidla,
+# pozdější přepíše dřívější, proto je obecné /* první a výjimky za ním.
+
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), interest-cohort=()
+
+# Soubory z buildu mají hash v názvu – při změně obsahu se změní i adresa.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Statické obrázky a písma v public/ – dlouhá cache, ale s možností revalidace.
+/images/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/favicon.svg
+  Cache-Control: public, max-age=604800
+
+# Odpovědi formulářového endpointu se nikdy nekešují.
+/api/*
+  Cache-Control: no-store

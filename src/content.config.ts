@@ -44,8 +44,8 @@ const nemovitosti = defineCollection({
       obrazky: z.array(image()).min(1),
       obrazkyAlt: z.array(z.string()).optional(),
       pudorys: image().optional(),
-      video: z.string().url().optional(), // YouTube/Vimeo
-      prohlidka3d: z.string().url().optional(), // Matterport apod.
+      video: z.url().optional(), // YouTube/Vimeo
+      prohlidka3d: z.url().optional(), // Matterport apod.
       datum: z.coerce.date(),
       featured: z.boolean().default(false),
       /** ID inzerátu pro budoucí XML feed / párování s CRM */

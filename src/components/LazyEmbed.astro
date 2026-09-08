@@ -1,0 +1,67 @@
+---
+/**
+ * Videoprohlídka (YouTube) a 3D prohlídka (Matterport) – iframe se vkládá až po kliknutí.
+ *
+ * Před kliknutím se na stránku nenačte nic z cizí domény (ani náhledový obrázek z ytimg.com),
+ * takže bez souhlasu s cookies neodejde žádný požadavek třetí strany a nezdržuje se LCP.
+ */
+interface Props {
+  url: string;
+  kind: 'video' | '3d';
+  class?: string;
+}
+const { url, kind, class: cls = '' } = Astro.props;
+
+/** ID videa z běžných tvarů YouTube URL; u ostatních poskytovatelů použijeme URL beze změny. */
+function embedSrc(raw: string): string {
+  try {
+    const u = new URL(raw);
+    const host = u.hostname.replace(/^www\./, '');
+    if (host === 'youtu.be') return `https://www.youtube-nocookie.com/embed/${u.pathname.slice(1)}?autoplay=1&rel=0`;
+    if (host.endsWith('youtube.com')) {
+      const id = u.searchParams.get('v') ?? u.pathname.split('/').pop();
+      if (id) return `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+    }
+    return raw;
+  } catch {
+    return raw;
+  }
+}
+
+const src = kind === 'video' ? embedSrc(url) : url;
+const title = kind === 'video' ? 'Videoprohlídka nemovitosti' : '3D prohlídka nemovitosti';
+const popis = kind === 'video'
+  ? 'Video se přehrává z YouTube. Spuštěním se připojíte ke službě třetí strany.'
+  : 'Prohlídka se načítá od poskytovatele 3D prohlídek. Spuštěním se připojíte ke službě třetí strany.';
+---
+<figure class:list={['mt-4', cls]} data-embed data-src={src}>
+  <div class="relative aspect-video overflow-hidden rounded-sm border border-line bg-beton" data-embed-slot>
+    <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center">
+      <button type="button" class="flex items-center gap-3 rounded-sm bg-wine px-5 py-3 text-[0.95rem] font-medium text-white hover:bg-wine-deep" data-embed-load>
+        <svg width="16" height="18" viewBox="0 0 16 18" fill="currentColor" aria-hidden="true"><path d="M15 9 0 18V0z" /></svg>
+        {kind === 'video' ? 'Spustit videoprohlídku' : 'Spustit 3D prohlídku'}
+      </button>
+      <p class="max-w-md text-sm text-mute">{popis}</p>
+    </div>
+  </div>
+  <figcaption class="mt-2 text-sm text-mute">
+    {title}. <a href={url} target="_blank" rel="noopener" class="underline underline-offset-2 hover:text-ink">Otevřít v novém okně</a>
+  </figcaption>
+</figure>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-embed]').forEach((box) => {
+    const slot = box.querySelector<HTMLElement>('[data-embed-slot]')!;
+    box.querySelector('[data-embed-load]')?.addEventListener('click', () => {
+      const frame = document.createElement('iframe');
+      frame.src = box.dataset.src!;
+      frame.title = 'Prohlídka nemovitosti';
+      frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; xr-spatial-tracking';
+      frame.allowFullscreen = true;
+      frame.loading = 'lazy';
+      frame.className = 'absolute inset-0 h-full w-full border-0';
+      slot.replaceChildren(frame);
+      window.dataLayer?.push({ event: 'embed_play', page: location.pathname });
+    });
+  });
+</script>

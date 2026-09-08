@@ -4,4 +4,7 @@ dist/
 .DS_Store
 .env
 .env.*
+# tajné klíče pro místní běh Cloudflare funkcí
+.dev.vars
+.wrangler/
 npm-debug.log*

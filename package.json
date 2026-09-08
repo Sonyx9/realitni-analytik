@@ -3,10 +3,16 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "node scripts/check-obrazky.mjs",
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "images:optimize": "node scripts/optimize-images.mjs"
+    "check:obrazky": "node scripts/check-obrazky.mjs",
+    "check:texty": "node scripts/check-texty.mjs",
+    "check:odkazy": "node scripts/check-odkazy.mjs",
+    "check:funkce": "tsc --noEmit -p functions/tsconfig.json",
+    "images:optimize": "node scripts/optimize-images.mjs",
+    "dev:funkce": "wrangler pages dev dist"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
@@ -18,5 +24,11 @@
     "tailwindcss": "^4.3.3"
   },
   "private": true,
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@cloudflare/workers-types": "^5.20260908.1",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.130.0"
+  }
 }

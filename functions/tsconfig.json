@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "types": ["@cloudflare/workers-types"],
+    "lib": ["ES2022"],
+    "moduleResolution": "Bundler",
+    "module": "ESNext",
+    "target": "ES2022",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["./**/*.ts", "../src/data/site.ts"]
+}

@@ -1,0 +1,45 @@
+# Kontrola každé změny dřív, než se dostane na web.
+#
+# U pull requestu i u pushe do main proběhne build se stejnými kroky jako na hostingu.
+# Když je rozbitý frontmatter nemovitosti nebo je fotka moc velká, build spadne tady –
+# ne až na produkci.
+name: Kontrola webu
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build a kontroly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalace závislostí
+        run: npm ci
+
+      - name: Typová kontrola stránek a komponent
+        run: npm run check
+
+      - name: Typová kontrola formulářového endpointu
+        run: npm run check:funkce
+
+      # `npm run build` sám spouští prebuild = kontrolu formátu a velikosti fotografií.
+      - name: Build
+        run: npm run build
+
+      - name: Odkazy a stránky ze sitemapy vrací 200
+        run: node scripts/check-odkazy.mjs
+
+      # PŘED OSTRÝM SPUŠTĚNÍM: smazat `continue-on-error` níž, ať kontrola blokuje merge.
+      # Dokud web běží na ukázkovém obsahu a v site.ts jsou zástupné údaje, hlásí nálezy právem.
+      - name: Rozpracované texty v buildu (zatím jen upozornění)
+        run: npm run check:texty
+        continue-on-error: true

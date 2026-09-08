@@ -36,8 +36,20 @@ export const site = {
     'https://www.sreality.cz/adresar/realitni-analytik-cz-vyskov-nosalovice/70763',
   /** Google recenze – odkaz na "Napsat recenzi" / profil firmy. TODO */
   googleReviews: '',
-  /** Endpoint formulářů – viz zadání (Cloudflare Worker / Formspree). TODO */
+  /** Endpoint formulářů – Cloudflare Pages Function `functions/api/lead.ts`. */
   formEndpoint: '/api/lead',
+  /**
+   * Veřejný site key Cloudflare Turnstile (ochrana formulářů proti spamu).
+   * Prázdná hodnota = widget se nevykreslí a server ověření přeskočí (vývoj, staging bez účtu).
+   * Tajný klíč patří do proměnné prostředí TURNSTILE_SECRET – nikdy do repozitáře.
+   * TODO doplnit po založení widgetu v Cloudflare → Turnstile.
+   */
+  turnstileSiteKey: '',
+  /**
+   * ID kontejneru Google Tag Manageru. Prázdná hodnota = GTM se nenačte vůbec
+   * (web pak neposílá žádná data třetí straně). TODO doplnit před spuštěním.
+   */
+  gtmId: '',
 } as const;
 
 export const nav = [

@@ -1,0 +1,11 @@
+---
+/**
+ * Místo pro widget Cloudflare Turnstile. Skript se sem načte až při první interakci
+ * s formulářem (viz src/lib/forms.ts), takže před ní neodejde požadavek na cizí doménu.
+ * Bez vyplněného `site.turnstileSiteKey` se nevykreslí nic.
+ */
+import { site } from '@/data/site';
+interface Props { class?: string }
+const { class: cls = '' } = Astro.props;
+---
+{site.turnstileSiteKey && <div data-turnstile class:list={['empty:hidden', cls]}></div>}

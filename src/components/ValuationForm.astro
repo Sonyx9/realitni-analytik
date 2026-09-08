@@ -6,6 +6,7 @@
  * bar     = jednořádková lišta pod hero (typ, obec, plocha → plný formulář)
  */
 import { site } from '@/data/site';
+import TurnstileField from './TurnstileField.astro';
 interface Props { variant?: 'compact' | 'full' | 'bar'; class?: string }
 const { variant = 'compact', class: cls = '' } = Astro.props;
 const typy = [
@@ -185,6 +186,7 @@ const stavy = ['novostavba', 'po rekonstrukci', 'dobrý, udržovaný', 'původn�
         <input type="checkbox" name="souhlas" required class="mt-1 h-4 w-4 accent-wine" />
         <span>Souhlasím se zpracováním údajů pro účely vypracování ocenění. <a href="/ochrana-osobnich-udaju/" class="underline">Jak s údaji nakládáme</a></span>
       </label>
+      <TurnstileField class="mt-5" />
       <div class="mt-6 flex items-center justify-between gap-4">
         <button type="button" class="btn btn-outline" data-prev>Zpět</button>
         <button type="submit" class="btn btn-primary btn-lg">Odeslat žádost o ocenění</button>
@@ -198,6 +200,7 @@ const stavy = ['novostavba', 'po rekonstrukci', 'dobrý, udržovaný', 'původn�
 
 {variant === 'full' && (
   <script>
+    import { attachLeadForm } from '@/lib/forms';
     const form = document.querySelector<HTMLFormElement>('[data-valuation]');
     if (form) {
       const steps = [...form.querySelectorAll<HTMLElement>('[data-step]')];
@@ -231,23 +234,8 @@ const stavy = ['novostavba', 'po rekonstrukci', 'dobrý, udržovaný', 'původn�
       form.querySelectorAll('[data-next]').forEach((b) => b.addEventListener('click', () => validStep(current) && show(current + 1)));
       form.querySelectorAll('[data-prev]').forEach((b) => b.addEventListener('click', () => show(current - 1)));
 
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!validStep(current)) return;
-        const err = form.querySelector<HTMLElement>('[data-form-error]')!;
-        const btn = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
-        btn.disabled = true; btn.textContent = 'Odesílám…';
-        try {
-          const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
-          if (!res.ok) throw new Error(String(res.status));
-          window.dataLayer?.push({ event: 'lead_oceneni' });
-          location.href = '/dekujeme/?typ=oceneni';
-        } catch {
-          err.hidden = false;
-          err.textContent = 'Odeslání se nepodařilo. Zkuste to znovu, nebo zavolejte – číslo je v hlavičce stránky.';
-          btn.disabled = false; btn.textContent = 'Odeslat žádost o ocenění';
-        }
-      });
+      // odeslání (fetch, UTM, Turnstile, chybová hláška) je společné pro všechny formuláře
+      attachLeadForm(form, () => validStep(current));
     }
   </script>
 )}
