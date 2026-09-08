@@ -1,0 +1,75 @@
+# Náhled webu na GitHub Pages – https://sonyx9.github.io/realitni-analytik/
+#
+# Slouží klientovi k prohlédnutí a připomínkám. Ostrý web poběží na vlastní doméně
+# na Cloudflare Pages (viz NASAZENI.md) – tenhle náhled ho nenahrazuje.
+#
+# Proti výchozímu workflow GitHubu („Deploy static content“) je rozdíl v tom, že web
+# se tady nejdřív POSTAVÍ. Publikovat zdrojáky nemá smysl – prohlížeč by dostal
+# soubory .astro, které neumí zobrazit, takže by nebyl vidět ani obsah, ani stylování.
+#
+# Pages běží na podcestě /realitni-analytik/, ne v kořeni domény. Adresu a podcestu
+# proto předáváme buildu v proměnných (astro.config.mjs si je přečte) a odkazy
+# zapsané ve zdrojácích natvrdo dorovná scripts/base-prefix.mjs.
+name: Náhled na GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Naráz běží jen jedno nasazení; rozdělaná nasazení se nepřerušují.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build a nasazení náhledu
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Nastavení Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Instalace závislostí
+        run: npm ci
+
+      # `npm run build` si sám pustí kontrolu fotografií (prebuild).
+      - name: Build
+        env:
+          SITE_URL: ${{ steps.pages.outputs.origin }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: npm run build
+
+      - name: Doplnění podcesty do odkazů
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: node scripts/base-prefix.mjs
+
+      # Bez tohoto souboru by GitHub Pages protáhly výstup Jekyllem a zahodily
+      # složku _astro (začíná podtržítkem) – tedy všechny styly a obrázky.
+      - name: Vypnutí Jekyllu
+        run: touch dist/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Nasazení
+        id: deployment
+        uses: actions/deploy-pages@v4

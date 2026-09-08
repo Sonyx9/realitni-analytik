@@ -41,7 +41,29 @@ npx wrangler pages dev dist      # http://localhost:8788
 Bez vyplněného `TURNSTILE_SECRET` se ověření robota přeskočí, bez `RESEND_API_KEY`
 endpoint vrátí 502 (e-mail je jediný krok, který nesmí tiše selhat).
 
-## 3. Cloudflare Pages
+## 3. Náhled na GitHub Pages (jen pro připomínkování)
+
+Po každém pushi do `main` se web postaví a vystaví na
+**https://sonyx9.github.io/realitni-analytik/** (workflow `.github/workflows/nahled.yml`).
+Slouží k tomu, aby klient viděl, jak web vypadá, než se pořídí doména a hosting.
+
+Náhled běží na podcestě, ne v kořeni domény, proto build dostává adresu a podcestu
+v proměnných `SITE_URL` a `BASE_PATH` a odkazy zapsané ve zdrojácích natvrdo
+dorovná `scripts/base-prefix.mjs`. Lokálně se totéž vyzkouší takto:
+
+```bash
+SITE_URL=https://sonyx9.github.io BASE_PATH=/realitni-analytik npm run build:nahled
+npx serve dist   # nebo jiný statický server
+```
+
+**Co na náhledu nefunguje:** odesílání formulářů. `/api/lead` je serverová funkce
+Cloudflare, GitHub Pages umí jen statické soubory – formulář se vyplnit dá, ale
+odeslání skončí chybovou hláškou. Ostrý web tohle nemá.
+
+Až poběží Cloudflare Pages, náhled buď nechte jako testovací prostředí, nebo
+workflow `nahled.yml` smažte.
+
+## 4. Cloudflare Pages
 
 **Workers & Pages → Create → Pages → Connect to Git → vybrat repozitář**
 
@@ -75,7 +97,7 @@ Klíče vždy ukládejte jako **Secret** (šifrované), ne jako plain text.
 binding **`LEADS_KV`**. Bez něj limit (5 odeslání z IP za 10 minut) funguje jen
 v rámci jedné instance funkce – proti běžnému spamu to stačí, ale s KV je to spolehlivé.
 
-## 4. Služby, které se nastavují jednou
+## 5. Služby, které se nastavují jednou
 
 ### Resend (e-maily)
 
@@ -121,7 +143,7 @@ ID kontejneru se vyplňuje v `src/data/site.ts` → `gtmId`. Dokud je prázdné,
 nenačte vůbec. V GTM pak namapovat události z dataLayeru (seznam je v README)
 na konverze v GA4, Google Ads a Skliku.
 
-## 5. Doména a přesměrování
+## 6. Doména a přesměrování
 
 - DNS přepnout **až po kontrole staging verze** na `*.pages.dev`.
 - 301 přesměrování ze starých adres je v `public/_redirects` – nasadí se samo s webem.
@@ -131,7 +153,7 @@ na konverze v GA4, Google Ads a Skliku.
   *Stránky → Nenalezeno* a reálné staré adresy dopsat jmenovitě.
 - Cache a bezpečnostní hlavičky jsou v `public/_headers`.
 
-## 6. Checklist před ostrým spuštěním
+## 7. Checklist před ostrým spuštěním
 
 **Údaje a texty**
 

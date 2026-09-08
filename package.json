@@ -12,7 +12,8 @@
     "check:odkazy": "node scripts/check-odkazy.mjs",
     "check:funkce": "tsc --noEmit -p functions/tsconfig.json",
     "images:optimize": "node scripts/optimize-images.mjs",
-    "dev:funkce": "wrangler pages dev dist"
+    "dev:funkce": "wrangler pages dev dist",
+    "build:nahled": "npm run build && node scripts/base-prefix.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",

@@ -35,9 +35,19 @@ const NOINDEX = new Set([
   '/informace-pro-spotrebitele/',
 ]);
 
+/*
+ * Ostrý web běží na vlastní doméně v kořeni (Cloudflare Pages) – to je výchozí nastavení.
+ * Náhled na GitHub Pages běží na podcestě https://sonyx9.github.io/realitni-analytik/,
+ * proto si adresu a podcestu umí přepsat proměnnými prostředí (nastavuje je workflow
+ * .github/workflows/nahled.yml). Bez nich se nic nemění.
+ */
+const SITE = process.env.SITE_URL || 'https://realitni-analytik.cz';
+const BASE = process.env.BASE_PATH || undefined;
+
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://realitni-analytik.cz',
+  site: SITE,
+  base: BASE,
   trailingSlash: 'always',
   redirects: {
     '/analyzy': '/blog',
