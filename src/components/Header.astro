@@ -3,77 +3,93 @@ import Logo from './Logo.astro';
 import { nav, site } from '@/data/site';
 const path = Astro.url.pathname;
 const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
-/** v5: hlavička je na všech stránkách světlá a sticky (úvod má světlé hero). Overlay varianta zůstává pro případ tmavého hero. */
-const overlay = false;
 ---
-<header
-  class:list={[
-    'top-0 z-40 w-full transition-colors duration-300',
-    overlay ? 'absolute text-white' : 'sticky border-b border-line bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/85',
-  ]}
-  data-header
-  data-overlay={overlay ? 'true' : undefined}
->
-  <div class="container-x flex h-[76px] items-center justify-between gap-6">
-    <Logo light={overlay} />
+<header class="sticky top-0 z-40 w-full border-b border-line bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/90" data-header>
+  <div class="container-x flex h-16 items-center justify-between gap-4 lg:h-[76px]">
+    <Logo class="relative z-10 lg:self-start lg:rounded-b-sm lg:bg-paper lg:p-2" />
 
-    <nav aria-label="Hlavní navigace" class="hidden items-center gap-7 whitespace-nowrap lg:flex">
+    <nav aria-label="Hlavní navigace" class="hidden items-center gap-6 whitespace-nowrap lg:flex">
       {nav.map((item) => (
-        <a
-          href={item.href}
-          class:list={[
-            'text-[11px] font-medium uppercase tracking-[0.16em] transition-opacity hover:opacity-100',
-            overlay ? 'text-white opacity-80' : 'text-ink opacity-70',
-            { 'opacity-100 underline decoration-wine decoration-2 underline-offset-[10px]': isActive(item.href) },
-          ]}
-          aria-current={isActive(item.href) ? 'page' : undefined}
-        >{item.label}</a>
+        <a href={item.href} class:list={['border-b-2 border-transparent py-2 text-sm font-medium text-ink-soft transition-colors hover:text-ink', { 'border-wine text-ink': isActive(item.href) }]} aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
       ))}
     </nav>
 
-    <div class="hidden items-center gap-5 whitespace-nowrap lg:flex">
-      <a href={site.broker.phoneHref} class:list={['num hidden text-[0.9rem] font-medium xl:inline', overlay ? 'text-white' : 'text-ink']}>{site.broker.phone}</a>
-      <a href="/oceneni-nemovitosti-zdarma/" class:list={['btn-ghost', overlay ? 'btn-ghost-light' : 'btn-ghost-dark']}>Ocenit nemovitost</a>
+    <div class="hidden items-center gap-2 whitespace-nowrap lg:flex">
+      <a href={site.broker.phoneHref} class="btn btn-outline num hidden xl:inline-flex" aria-label={`Zavolat ${site.broker.phone}`}>{site.broker.phone}</a>
+      <a href="/oceneni-nemovitosti-zdarma/" class="btn btn-primary">Ocenit nemovitost</a>
     </div>
 
-    <button
-      type="button"
-      class:list={['inline-flex h-11 w-11 items-center justify-center border lg:hidden', overlay ? 'border-white/50 text-white' : 'border-line text-ink']}
-      aria-expanded="false"
-      aria-controls="mobile-menu"
-      data-menu-toggle
-    >
-      <span class="sr-only">Otevřít menu</span>
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 6h16M3 11h16M3 16h16" /></svg>
+    <button type="button" class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-line text-ink lg:hidden" aria-expanded="false" aria-controls="mobile-menu" aria-label="Otevřít menu" data-menu-toggle>
+      <svg class="menu-open-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 6h16M3 11h16M3 16h16" /></svg>
+      <svg class="menu-close-icon hidden" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m5 5 12 12M17 5 5 17" /></svg>
     </button>
   </div>
 
-  <div id="mobile-menu" hidden class="border-t border-line bg-paper text-ink lg:hidden">
+  <div id="mobile-menu" hidden class="absolute inset-x-0 top-full max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-line bg-paper text-ink shadow-panel lg:hidden" data-mobile-menu>
     <nav aria-label="Mobilní navigace" class="container-x flex flex-col py-3">
       {nav.map((item) => (
-        <a href={item.href} class="border-b border-line py-3.5 text-[13px] font-medium uppercase tracking-[0.14em] last:border-0">{item.label}</a>
+        <a href={item.href} class:list={['flex min-h-12 items-center border-b border-line py-3 text-base font-medium', { 'text-wine': isActive(item.href) }]} aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
       ))}
-      <div class="mt-3 flex flex-col gap-3 pb-2">
-        <a href="/oceneni-nemovitosti-zdarma/" class="btn btn-primary">Ocenění nemovitosti zdarma</a>
-        <a href={site.broker.phoneHref} class="btn btn-outline">Zavolat {site.broker.phone}</a>
+      <div class="grid gap-3 py-5">
+        <a href="/oceneni-nemovitosti-zdarma/" class="btn btn-primary btn-lg w-full">Ocenění nemovitosti zdarma</a>
+        <a href={site.broker.phoneHref} class="btn btn-outline btn-lg w-full">Zavolat {site.broker.phone}</a>
       </div>
     </nav>
   </div>
 </header>
+<div hidden class="fixed inset-0 z-30 bg-ink/45 backdrop-blur-[1px] lg:hidden" data-menu-backdrop aria-hidden="true"></div>
 
 <script>
-  const btn = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
-  const menu = document.getElementById('mobile-menu');
-  const header = document.querySelector<HTMLElement>('[data-header]');
-  btn?.addEventListener('click', () => {
-    const open = btn.getAttribute('aria-expanded') === 'true';
-    btn.setAttribute('aria-expanded', String(!open));
-    if (menu) menu.hidden = open;
-    // na úvodu při otevřeném menu dočasně plná hlavička
-    if (header?.dataset.overlay) header.classList.toggle('is-open', !open);
-  });
+  const initMenu = () => {
+    const btn = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+    const menu = document.querySelector<HTMLElement>('[data-mobile-menu]');
+    const backdrop = document.querySelector<HTMLElement>('[data-menu-backdrop]');
+    if (!btn || !menu || !backdrop || btn.dataset.ready) return;
+    btn.dataset.ready = 'true';
+    const openIcon = btn.querySelector<HTMLElement>('.menu-open-icon');
+    const closeIcon = btn.querySelector<HTMLElement>('.menu-close-icon');
+
+    const setOpen = (open: boolean, returnFocus = false) => {
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', open ? 'Zavřít menu' : 'Otevřít menu');
+      menu.hidden = !open;
+      backdrop.hidden = !open;
+      openIcon?.classList.toggle('hidden', open);
+      closeIcon?.classList.toggle('hidden', !open);
+      document.documentElement.classList.toggle('menu-open', open);
+      if (open) menu.querySelector<HTMLElement>('a')?.focus();
+      else if (returnFocus) btn.focus();
+    };
+
+    btn.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+    backdrop.addEventListener('click', () => setOpen(false, true));
+    menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('keydown', (event) => {
+      if (btn.getAttribute('aria-expanded') !== 'true') return;
+      if (event.key === 'Escape') {
+        setOpen(false, true);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = [btn, ...menu.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')];
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      } else if (!focusable.includes(document.activeElement as HTMLElement)) {
+        event.preventDefault();
+        first?.focus();
+      }
+    });
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024 && btn.getAttribute('aria-expanded') === 'true') setOpen(false);
+    });
+  };
+  initMenu();
+  document.addEventListener('astro:page-load', initMenu);
 </script>
-<style>
-  [data-overlay].is-open { background: var(--color-paper); color: var(--color-ink); }
-  [data-overlay].is-open a, [data-overlay].is-open button { color: var(--color-ink); border-color: var(--color-line); }
-</style>

@@ -5,193 +5,157 @@ import Base from '@/layouts/Base.astro';
 import ValuationForm from '@/components/ValuationForm.astro';
 import PropertyCard from '@/components/PropertyCard.astro';
 import Testimonials from '@/components/Testimonials.astro';
-import PriceChart from '@/components/PriceChart.astro';
-import CtaBand from '@/components/CtaBand.astro';
 import { sortNemovitosti, formatDatum, KATEGORIE_LABEL } from '@/lib/format';
 import { site, sluzby } from '@/data/site';
-import heroCut from '@/assets/hero-makler-cut.png';
 import heroMakler from '@/assets/hero-makler.jpg';
-import krok1 from '@/assets/krok-1.jpg';
-import krok3 from '@/assets/krok-3.jpg';
-import financovani from '@/assets/sluzba-financovani.jpg';
+import heroCut from '@/assets/hero-makler-cut.png';
 
 const all = sortNemovitosti(await getCollection('nemovitosti'));
 const active = all.filter((n) => n.data.status === 'aktivni');
-const featured = [...active].sort((a, b) => Number(b.data.featured) - Number(a.data.featured)).slice(0, 9);
+const featured = [...active].sort((a, b) => Number(b.data.featured) - Number(a.data.featured)).slice(0, 3);
 const analyzy = (await getCollection('blog')).sort((a, b) => b.data.datum.getTime() - a.data.datum.getTime()).slice(0, 3);
 const b = site.broker;
-
-const sluzbyImg = { prodej: krok3, oceneni: krok1, financovani } as const;
 ---
 <Base
   title="Realitní analytik – prodej a ocenění nemovitostí Vyškov, Brno, Praha"
   description="Ing. Petr Dřímal: prodej nemovitostí postavený na datech z realizovaných prodejů. Ocenění zdarma do 2 dnů, příprava nemovitosti, profesionální prezentace. Vyškov, jižní Morava, Praha."
 >
-  <!-- HERO v5: světlý podklad, typografický titulek po řádcích, makléř jako výřez (podle reference ilincev.com) -->
-  <section class="relative overflow-hidden bg-paper">
-    <div class="container-x grid gap-6 pt-12 lg:grid-cols-12 lg:items-end lg:gap-x-8 lg:gap-y-0 lg:pt-16">
-      <div class="pb-8 lg:col-span-7 lg:row-start-1 lg:pb-4">
+  <section class="overflow-hidden border-b border-line bg-beton">
+    <div class="container-x grid px-0 sm:px-8 lg:grid-cols-12 lg:items-stretch">
+      <div class="flex flex-col justify-center px-4 py-12 sm:px-0 sm:py-16 lg:col-span-7 lg:min-h-[660px] lg:py-20 lg:pr-16">
         <p class="eyebrow">Realitní makléř a analytik · Vyškov · Brno · Praha</p>
-        <h1 class="hero-lines mt-8">
-          <span class="block">Znám skutečné ceny.</span>
-          <span class="block">Připravím nemovitost.</span>
-          <span class="block">Prodám <span class="mark-oval">za víc.<svg viewBox="0 0 300 90" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M14 50 C10 22 92 6 162 8 C240 10 292 26 288 50 C284 74 202 86 130 84 C58 82 18 72 14 52 C12 42 22 34 36 31" /></svg></span></span>
+        <h1 class="mt-6 max-w-[13ch] text-[clamp(2.6rem,2rem+3vw,4.75rem)] leading-[0.98]">
+          Znám skutečné ceny.<br />Připravím nemovitost.<br /><span class="text-wine">Prodám bez zbytečné slevy.</span>
         </h1>
-        <p class="measure mt-8 text-[1.05rem] leading-relaxed text-ink-soft sm:text-lg">
-          Byty, domy a pozemky na Vyškovsku, v Brně a v Praze. Prodej bez zbytečné slevy a bez starostí – od první schůzky po předání klíčů.
+        <p class="measure mt-7 max-w-[54ch] text-lg leading-relaxed text-ink-soft">
+          Prodej založený na datech z trhu a katastru. Od správného ocenění přes prezentaci a prohlídky až po bezpečné předání klíčů.
         </p>
-        <div class="mt-9 flex flex-wrap gap-3">
-          <a href="/oceneni-nemovitosti-zdarma/" class="btn btn-primary rounded-none px-6 text-[11px] font-medium uppercase tracking-[0.16em]">Ocenění zdarma</a>
-          <a href="/nemovitosti/" class="btn-ghost btn-ghost-dark">Aktuální nabídka</a>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <a href="/oceneni-nemovitosti-zdarma/" class="btn btn-primary btn-lg">Zjistit cenu nemovitosti</a>
+          <a href="/nemovitosti/" class="btn btn-outline btn-lg">Prohlédnout nabídku</a>
         </div>
+        <dl class="mt-10 grid grid-cols-2 gap-5 border-t border-ink/15 pt-6 sm:flex sm:gap-12">
+          <div><dd class="num text-2xl font-semibold">{b.valuationsDone.toLocaleString('cs-CZ')}+</dd><dt class="mt-1 text-sm text-mute">provedených ocenění</dt></div>
+          <div><dd class="num text-2xl font-semibold">{b.yearsOnMarket} let</dd><dt class="mt-1 text-sm text-mute">praxe na trhu</dt></div>
+        </dl>
       </div>
 
-      <div class="relative self-end lg:col-span-5 lg:col-start-8 lg:row-span-2">
-        <!-- oblouk za makléřem navazuje na šedou lištu pod hero -->
-        <div class="absolute inset-x-[6%] bottom-0 top-[18%] rounded-t-full bg-beton" aria-hidden="true"></div>
-        <figure class="relative mx-auto w-[78%] max-w-[420px] lg:mx-0 lg:w-full lg:max-w-[500px]">
-          <Image
-            src={heroCut}
-            alt={b.name}
-            width={1168}
-            height={1908}
-            widths={[480, 720, 1000]}
-            sizes="(min-width:1024px) 500px, 78vw"
-            format="webp"
-            quality={82}
-            loading="eager"
-            fetchpriority="high"
-            class="block w-full"
-          />
-          <figcaption class="absolute bottom-6 left-0 border border-line bg-paper px-4 py-3 text-ink lg:-left-8">
-            <p class="font-serif text-lg font-medium leading-tight" style="font-variation-settings:'opsz' 24">{b.name}</p>
-            <p class="eyebrow mt-1">{b.role}</p>
-          </figcaption>
-        </figure>
-      </div>
-
-      <!-- čísla: na mobilu až pod fotografií, na desktopu pod textem v levém sloupci -->
-      <dl class="flex flex-wrap gap-x-10 gap-y-4 border-t border-line py-6 lg:col-span-7 lg:col-start-1 lg:row-start-2 lg:mt-0 lg:pb-24 lg:pt-6">
-        <div><dd class="num font-serif text-2xl font-medium" style="font-variation-settings:'opsz' 32">{b.valuationsDone.toLocaleString('cs-CZ')}+</dd><dt class="eyebrow mt-1">Ocenění</dt></div>
-        <div><dd class="num font-serif text-2xl font-medium" style="font-variation-settings:'opsz' 32">{b.yearsOnMarket} let</dd><dt class="eyebrow mt-1">Na trhu</dt></div>
-        <div><dd class="num font-serif text-2xl font-medium" style="font-variation-settings:'opsz' 32">až 20 %</dd><dt class="eyebrow mt-1">Vyšší cena</dt></div>
-      </dl>
+      <figure class="relative mx-4 mb-4 min-h-[480px] overflow-hidden rounded-sm bg-wine sm:mx-0 sm:mb-0 sm:min-h-[560px] lg:col-span-5 lg:my-8 lg:min-h-[700px] lg:overflow-visible lg:[clip-path:inset(-3rem_-4rem_0_-4rem)]">
+        <div class="absolute inset-x-6 top-6 flex items-center justify-between border-b border-white/25 pb-3 text-xs font-semibold tracking-[0.06em] text-white/75 sm:inset-x-8 sm:top-8" aria-hidden="true">
+          <span>REALITNÍ ANALYTIK</span><span>01 / PETR DŘÍMAL</span>
+        </div>
+        <div class="absolute inset-x-[12%] bottom-0 top-[16%] border-x border-t border-white/20" aria-hidden="true"></div>
+        <Image
+          src={heroCut}
+          alt={`${b.name}, ${b.role}`}
+          width={1168}
+          height={1908}
+          widths={[480, 720, 1000]}
+          sizes="(min-width: 1024px) 500px, 90vw"
+          format="webp"
+          quality={84}
+          loading="eager"
+          fetchpriority="high"
+          class="absolute bottom-0 left-1/2 h-[86%] w-auto max-w-none -translate-x-1/2 object-contain object-bottom sm:h-[88%] lg:bottom-auto lg:top-0 lg:h-auto lg:w-[108%]"
+        />
+        <figcaption class="absolute bottom-5 left-5 border border-white/30 bg-ink/90 px-4 py-3 text-white shadow-panel sm:bottom-7 sm:left-7">
+          <strong class="block font-serif text-xl font-medium leading-tight">{b.name}</strong>
+          <span class="mt-1 block text-sm text-white/70">{b.role}</span>
+        </figcaption>
+      </figure>
     </div>
   </section>
 
-  <!-- LIŠTA OCENĚNÍ + kde inzerujeme -->
-  <section class="border-b border-line bg-beton">
-    <div class="container-x py-10 lg:py-12">
-      <ValuationForm variant="bar" />
-      <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8">
-        <p class="eyebrow shrink-0">Nemovitosti inzerujeme na</p>
-        <!-- TODO ostrý web: nahradit skutečnými logy portálů (SVG, mono šedá) -->
-        <ul class="flex flex-wrap items-center gap-x-8 gap-y-2 font-serif text-lg font-medium text-mute" style="font-variation-settings:'opsz' 24" aria-label="Realitní portály">
-          <li>Sreality.cz</li><li>Reality.iDNES.cz</li><li>Bezrealitky</li><li>RealityMix</li><li>Facebook</li>
-        </ul>
+  <section aria-labelledby="nabidka-title">
+    <div class="container-x py-16 lg:py-24">
+      <div class="section-heading">
+        <div><p class="eyebrow">Aktuální nabídka</p><h2 id="nabidka-title" class="mt-3">Vybrané nemovitosti</h2></div>
+        <a href="/nemovitosti/" class="text-link">Celá nabídka ({active.length})</a>
       </div>
+      {featured.length ? (
+        <div class="mt-9 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+          {featured.map((n, i) => <PropertyCard item={n} eager={i === 0} />)}
+        </div>
+      ) : (
+        <p class="mt-8 text-ink-soft">Aktuálně nejsou zveřejněné žádné aktivní nabídky.</p>
+      )}
     </div>
   </section>
 
-  <!-- AKTUÁLNÍ NABÍDKA -->
-  <section>
-    <div class="container-x py-20 lg:py-24">
-      <div class="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p class="eyebrow">Aktuální nabídka</p>
-          <h2 class="mt-3">Právě v nabídce</h2>
-        </div>
-        <a href="/nemovitosti/" class="eyebrow underline decoration-line underline-offset-[6px] hover:text-ink">{active.length} nemovitostí v nabídce</a>
+  <section class="border-y border-line bg-beton" aria-labelledby="postup-title">
+    <div class="container-x grid gap-10 py-16 lg:grid-cols-12 lg:gap-16 lg:py-24">
+      <div class="lg:col-span-4">
+        <p class="eyebrow">Jak spolupráce probíhá</p>
+        <h2 id="postup-title" class="mt-3">Jasný postup od ceny po předání</h2>
+        <p class="mt-5 text-ink-soft">Jeden člověk odpovídá za celý obchod a průběžně vysvětluje další krok.</p>
       </div>
-      <div class="mt-10 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-        {featured.map((n) => <PropertyCard item={n} />)}
-      </div>
-      <div class="mt-12 text-center">
-        <a href="/nemovitosti/" class="btn-ghost btn-ghost-dark">Celá nabídka a filtry</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- SLUŽBY – prodej, ocenění, financování (tři čtvercové fotografie) -->
-  <section class="bg-beton">
-    <div class="container-x py-20 lg:py-24">
-      <div class="grid gap-6 lg:grid-cols-12 lg:items-end">
-        <div class="lg:col-span-8">
-          <p class="eyebrow">Služby</p>
-          <h2 class="mt-3">Prodej, ocenění a financování. Jeden člověk, který za to ručí.</h2>
-        </div>
-      </div>
-      <ol class="mt-12 grid gap-8 sm:grid-cols-3">
+      <ol class="divide-y divide-ink/15 border-y border-ink/15 lg:col-span-8">
         {sluzby.map((sl, i) => (
-          <li class="flex flex-col">
-            <p class="eyebrow">0{i + 1}/ {sl.title}</p>
-            <a href={sl.href} class="mt-3 block" tabindex="-1" aria-hidden="true">
-              <Image src={sluzbyImg[sl.slug]} alt="" width={700} height={700} widths={[400, 700, 1000]} sizes="(min-width:1024px) 380px, (min-width:640px) 30vw, 90vw" format="webp" quality={76} loading="lazy" class="aspect-square w-full object-cover" />
-            </a>
-            <p class="mt-4 text-[0.95rem] leading-relaxed text-ink-soft">{sl.text}</p>
-            <a href={sl.href} class="mt-4 inline-block text-[11px] font-medium uppercase tracking-[0.16em] text-ink underline decoration-line underline-offset-[6px] hover:decoration-ink">Více o službě</a>
+          <li class="grid gap-3 py-6 sm:grid-cols-[3rem_1fr_auto] sm:items-start sm:gap-5">
+            <span class="num text-sm font-semibold text-wine">0{i + 1}</span>
+            <div><h3 class="font-sans text-xl font-semibold tracking-normal">{sl.title}</h3><p class="mt-2 text-base leading-relaxed text-ink-soft">{sl.text}</p></div>
+            <a href={sl.href} class="text-link sm:mt-1">Více</a>
           </li>
         ))}
       </ol>
     </div>
   </section>
 
-  <!-- METODA + KDO JE MAKLÉŘ – tmavý blok s grafem -->
-  <section class="bg-ink text-white">
-    <div class="container-x grid items-center gap-12 py-20 lg:grid-cols-12 lg:py-24">
+  <section aria-labelledby="makler-title">
+    <div class="container-x grid gap-10 py-16 lg:grid-cols-12 lg:items-center lg:gap-16 lg:py-24">
       <div class="lg:col-span-5">
-        <p class="eyebrow-light">Metoda</p>
-        <h2 class="mt-4 text-white">Inzeráty lžou. Katastr ne.</h2>
-        <p class="measure mt-6 text-[1.05rem] leading-relaxed text-white/75">
-          Nabídkové ceny v inzerci jsou přání prodávajících. Já pracuji s cenami, za které se nemovitosti opravdu prodaly – z katastru a z vlastních obchodů. Než jsem začal prodávat, roky jsem nemovitosti oceňoval pro banky, dědická řízení i majitele, kteří jen chtěli vědět, na čem jsou.
+        <Image src={heroMakler} alt={b.name} width={900} height={1100} widths={[500, 900]} sizes="(min-width:1024px) 40vw, 100vw" format="webp" quality={80} loading="eager" decoding="async" class="aspect-[4/5] w-full rounded-md object-cover object-top" />
+      </div>
+      <div class="lg:col-span-6 lg:col-start-7">
+        <p class="eyebrow">Realitní analytik</p>
+        <h2 id="makler-title" class="mt-3">Nejdřív odhadce pro banky, dnes makléř</h2>
+        <p class="measure mt-6 text-lg leading-relaxed text-ink-soft">
+          {b.name} pracuje s cenami realizovaných prodejů z katastru a s vlastními obchody. Před prodejem stanoví cenu, připraví nemovitost a provede majitele celým obchodem.
         </p>
-        <div class="mt-8 flex items-center gap-4 border-t border-white/15 pt-6">
-          <Image src={heroMakler} alt="" width={112} height={112} format="webp" quality={80} loading="lazy" class="h-14 w-14 rounded-full object-cover object-top" />
-          <div>
-            <p class="font-serif text-lg font-medium leading-tight" style="font-variation-settings:'opsz' 24">{b.name}</p>
-            <p class="mt-1 text-sm text-white/60">Dřív odhadce pro banky, dnes makléř. <a href="/o-nas/" class="text-white underline decoration-white/40 underline-offset-4 hover:decoration-white">Příběh</a></p>
-          </div>
-        </div>
-      </div>
-      <div class="lg:col-span-7">
-        <PriceChart dark />
+        <dl class="mt-8 grid grid-cols-2 gap-6 border-y border-line py-6">
+          <div><dd class="num text-2xl font-semibold">{b.valuationsDone.toLocaleString('cs-CZ')}+</dd><dt class="mt-1 text-sm text-mute">ocenění</dt></div>
+          <div><dd class="num text-2xl font-semibold">{b.yearsOnMarket} let</dd><dt class="mt-1 text-sm text-mute">na trhu</dt></div>
+        </dl>
+        <a href="/o-nas/" class="btn btn-outline mt-8">Poznat Petra Dřímala</a>
       </div>
     </div>
   </section>
 
-  <!-- REFERENCE -->
-  <section class="container-x py-20 lg:py-24">
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <p class="eyebrow">Reference</p>
-        <h2 class="mt-3">Co říkají lidé, kterým jsem prodal</h2>
+  <section class="bg-ink text-white" aria-labelledby="reference-title">
+    <div class="container-x py-16 lg:py-24">
+      <div class="section-heading border-white/20">
+        <div><p class="eyebrow-light">Reference</p><h2 id="reference-title" class="mt-3 text-white">Zkušenosti klientů</h2></div>
+        <a href="/reference/" class="text-link text-white decoration-white/40">Všechny reference</a>
       </div>
-      <a href="/reference/" class="eyebrow underline decoration-line underline-offset-[6px] hover:text-ink">Všechny reference</a>
+      <Testimonials class="mt-9 text-ink" />
     </div>
-    <Testimonials class="mt-10" />
   </section>
 
-  <!-- BLOG -->
-  <section class="bg-beton">
+  <section aria-labelledby="blog-title">
     <div class="container-x py-16 lg:py-20">
-      <div class="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p class="eyebrow">Blog</p>
-          <h2 class="mt-3">Analýzy trhu, rady k prodeji a novinky</h2>
-        </div>
-        <a href="/blog/" class="eyebrow underline decoration-line underline-offset-[6px] hover:text-ink">Všechny články</a>
+      <div class="section-heading">
+        <div><p class="eyebrow">Blog</p><h2 id="blog-title" class="mt-3">Analýzy a praktické rady</h2></div>
+        <a href="/blog/" class="text-link">Všechny články</a>
       </div>
-      <ul class="mt-10 grid gap-8 md:grid-cols-3">
+      <ul class="mt-8 divide-y divide-line border-y border-line">
         {analyzy.map((a) => (
-          <li class="border-t border-ink/20 pt-5">
-            <p class="eyebrow">{KATEGORIE_LABEL[a.data.kategorie]} · {formatDatum(a.data.datum)}</p>
-            <h3 class="mt-3"><a href={`/blog/${a.id}/`} class="hover:text-wine">{a.data.title}</a></h3>
-            <p class="mt-2 text-[0.95rem] leading-relaxed text-ink-soft">{a.data.perex}</p>
+          <li class="grid gap-2 py-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-8">
+            <div><p class="text-sm text-mute">{KATEGORIE_LABEL[a.data.kategorie]} · {formatDatum(a.data.datum)}</p><h3 class="mt-2 font-sans text-xl font-semibold tracking-normal"><a href={`/blog/${a.id}/`} class="hover:text-wine">{a.data.title}</a></h3></div>
+            <a href={`/blog/${a.id}/`} class="text-link">Číst článek</a>
           </li>
         ))}
       </ul>
     </div>
   </section>
 
-  <CtaBand title="Nejdřív jen zjistit, na čem jste?" text="Ocenění je zdarma a k ničemu nezavazuje. Nebo rovnou zavolejte – na začátku stačí patnáct minut." />
+  <section class="border-t border-line bg-beton" aria-labelledby="oceneni-title">
+    <div class="container-x grid gap-8 py-16 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-20">
+      <div class="lg:col-span-4">
+        <p class="eyebrow">Ocenění nemovitosti</p>
+        <h2 id="oceneni-title" class="mt-3">Zjistěte, za kolik se může skutečně prodat</h2>
+        <p class="mt-5 text-ink-soft">Údaje poslouží jako podklad pro osobní ocenění. Výsledek dostanete zdarma do 2 pracovních dnů a bez závazku.</p>
+      </div>
+      <div class="lg:col-span-8"><ValuationForm variant="bar" /></div>
+    </div>
+  </section>
 </Base>

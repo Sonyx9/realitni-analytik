@@ -30,6 +30,19 @@ const og = await getImage({ src: d.obrazky[0], width: 1200, height: 630, format:
 const alts = d.obrazkyAlt ?? [];
 const fulls = await Promise.all(d.obrazky.map((img) => getImage({ src: img, width: 1600, format: 'webp', quality: 80 })));
 
+/** Galerie využije celou šířku i u inzerátů s jednou až třemi fotografiemi. */
+const galleryItemClass = (i: number) => {
+  if (i >= 5) return 'hidden';
+  if (i > 0) {
+    if (d.obrazky.length === 2) return 'hidden md:block md:col-span-1 md:row-span-2';
+    if (d.obrazky.length === 3) return 'hidden md:block md:col-span-1';
+    return 'hidden md:block';
+  }
+  if (d.obrazky.length === 1) return 'md:col-span-4 md:row-span-2';
+  if (d.obrazky.length <= 3) return 'md:col-span-3 md:row-span-2';
+  return 'md:col-span-2 md:row-span-2';
+};
+
 const facts = [
   d.dispozice && { label: 'Dispozice', value: d.dispozice },
   d.plocha && { label: 'Užitná plocha', value: formatPlocha(d.plocha) },
@@ -78,7 +91,7 @@ const breadcrumbLd = {
   jsonLd={[listingLd, breadcrumbLd]}
   noindex={inactive}
 >
-  <article class="container-x pt-8">
+  <article class="container-x pt-8 lg:pt-14">
     <nav aria-label="Drobečková navigace" class="text-sm text-mute">
       <a href="/nemovitosti/" class="hover:text-ink hover:underline">Nemovitosti</a>
       <span aria-hidden="true"> / </span>
@@ -98,16 +111,18 @@ const breadcrumbLd = {
       <div class="lg:col-span-4 lg:text-right">
         <p class:list={['num text-3xl font-semibold', { 'text-mute line-through decoration-2': inactive }]}>{formatCena(item)}</p>
         {d.cenaPoznamka && d.cena !== null && <p class="mt-1 text-sm text-mute">{d.cenaPoznamka}</p>}
+        {!inactive && <a href="#kontakt" class="btn btn-primary mt-4 w-full sm:w-auto">Domluvit prohlídku</a>}
       </div>
     </header>
 
     <!-- GALERIE -->
-    <div class="relative mt-8 grid gap-2 md:grid-cols-4 md:grid-rows-2" data-gallery>
+    <div class="relative mt-8 grid gap-2 md:h-[clamp(460px,44vw,620px)] md:grid-cols-4 md:grid-rows-2" data-gallery>
       {d.obrazky.map((img, i) => (
         <a
           href={fulls[i].src}
-          class:list={['group relative block overflow-hidden rounded-sm bg-beton', i === 0 ? 'md:col-span-2 md:row-span-2' : i < 5 ? 'hidden md:block' : 'hidden']}
+          class:list={['group relative block overflow-hidden rounded-sm bg-beton', galleryItemClass(i)]}
           data-gallery-item={i}
+          data-gallery-alt={d.obrazkyAlt?.[i] ?? `${d.title} – fotografie ${i + 1}`}
           aria-label={`Fotografie ${i + 1} z ${d.obrazky.length}`}
         >
           <Image
@@ -120,29 +135,30 @@ const breadcrumbLd = {
             format="webp"
             quality={i === 0 ? 82 : 76}
             loading={i === 0 ? 'eager' : 'lazy'}
-            class="aspect-[3/2] h-full w-full object-cover"
+            class:list={['h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.015]', i === 0 ? 'aspect-[3/2] md:aspect-auto' : 'aspect-[3/2]']}
           />
         </a>
       ))}
-      {d.obrazky.length > 5 && (
-        <button type="button" class="btn btn-outline absolute bottom-4 left-4 bg-paper" data-gallery-all>Všech {d.obrazky.length} fotografií</button>
+      {d.obrazky.length > 1 && (
+        <button type="button" class="btn btn-outline absolute bottom-4 right-4 bg-paper" data-gallery-all>Zobrazit všechny fotografie <span class="num">({d.obrazky.length})</span></button>
       )}
     </div>
-    <p class="mt-2 text-sm text-mute md:hidden">Klepnutím na fotografii otevřete galerii ({d.obrazky.length} fotografií).</p>
+    <p class="mt-2 text-sm text-mute md:hidden">Klepnutím na fotografii ji otevřete na celou obrazovku.</p>
 
-    <div class="mt-10 grid gap-12 lg:grid-cols-12">
-      <div class="lg:col-span-8">
-        <!-- KLÍČOVÁ FAKTA -->
-        {facts.length > 0 && (
-          <dl class="grid grid-cols-2 gap-x-6 gap-y-4 border-y border-line py-5 sm:grid-cols-3 lg:grid-cols-5">
-            {facts.map((f) => (
-              <div>
-                <dt class="text-sm text-mute">{f.label}</dt>
-                <dd class="mt-0.5 font-semibold">{f.value}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
+    <!-- KLÍČOVÁ FAKTA -->
+    {facts.length > 0 && (
+      <dl class="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 border-y border-line py-5 sm:grid-cols-3 lg:grid-cols-5">
+        {facts.map((f) => (
+          <div>
+            <dt class="text-sm text-mute">{f.label}</dt>
+            <dd class="mt-0.5 font-semibold">{f.value}</dd>
+          </div>
+        ))}
+      </dl>
+    )}
+
+    <div class="mt-8 grid gap-10 lg:grid-cols-12 lg:gap-12">
+      <div class="order-2 lg:order-1 lg:col-span-8">
 
         <section class="mt-10">
           <h2 class="text-2xl">Popis</h2>
@@ -199,7 +215,7 @@ const breadcrumbLd = {
       </div>
 
       <!-- SIDEBAR: kontakt / mám zájem -->
-      <aside class="lg:col-span-4">
+      <aside id="kontakt" class="order-1 scroll-mt-24 lg:order-2 lg:col-span-4">
         <div class="rounded-md border border-line bg-paper p-6 lg:sticky lg:top-24">
           <BrokerCard note="" />
           {inactive ? (
@@ -211,7 +227,15 @@ const breadcrumbLd = {
           ) : (
             <div class="mt-5 border-t border-line pt-5">
               <p class="font-medium">Mám zájem o prohlídku</p>
-              <LeadForm formId="zajem" subject={d.title} submitLabel="Domluvit prohlídku" messageLabel="Kdy se vám hodí prohlídka" messagePlaceholder="např. odpoledne v týdnu nebo o víkendu" compact class="mt-4" />
+              <p class="mt-1 text-sm text-ink-soft">Ozvěte se Petrovi přímo nebo pošlete krátký formulář.</p>
+              <a href={site.broker.phoneHref} class="btn btn-outline mt-4 w-full">Zavolat {site.broker.phone}</a>
+              <details class="group mt-3 lg:hidden">
+                <summary class="btn btn-primary w-full cursor-pointer list-none marker:hidden">Napsat kvůli prohlídce</summary>
+                <LeadForm formId="zajem-mobil" submissionType="zajem" subject={d.title} submitLabel="Domluvit prohlídku" messageLabel="Kdy se vám hodí prohlídka" messagePlaceholder="např. odpoledne v týdnu nebo o víkendu" compact class="mt-5 border-t border-line pt-5" />
+              </details>
+              <div class="mt-5 hidden border-t border-line pt-5 lg:block">
+                <LeadForm formId="zajem" subject={d.title} submitLabel="Domluvit prohlídku" messageLabel="Kdy se vám hodí prohlídka" messagePlaceholder="např. odpoledne v týdnu nebo o víkendu" compact />
+              </div>
             </div>
           )}
         </div>
@@ -231,12 +255,12 @@ const breadcrumbLd = {
   <CtaBand class="mt-20" title="Máte podobnou nemovitost na prodej?" text="Zjistěte, za kolik by se prodala. Ocenění z realizovaných prodejů zdarma, do 2 pracovních dnů." />
 
   <!-- LIGHTBOX -->
-  <dialog data-lightbox class="m-auto h-dvh w-screen max-w-none bg-ink/95 p-0 text-white backdrop:bg-ink/80">
+  <dialog data-lightbox aria-label={`Galerie: ${d.title}`} class="m-auto h-dvh w-screen max-w-none bg-ink/95 p-0 text-white backdrop:bg-ink/80">
     <button type="button" class="absolute right-4 top-4 z-10 rounded-sm border border-white/30 px-3 py-2 text-sm" data-lb-close>Zavřít</button>
     <div class="flex h-full items-center justify-center p-4">
-      <button type="button" class="absolute left-2 top-1/2 -translate-y-1/2 p-3 text-3xl" data-lb-prev aria-label="Předchozí">‹</button>
+      {d.obrazky.length > 1 && <button type="button" class="absolute left-2 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/25 text-3xl hover:bg-black/45" data-lb-prev aria-label="Předchozí fotografie">‹</button>}
       <img data-lb-img alt="" class="max-h-full max-w-full object-contain" />
-      <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 p-3 text-3xl" data-lb-next aria-label="Další">›</button>
+      {d.obrazky.length > 1 && <button type="button" class="absolute right-2 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-black/25 text-3xl hover:bg-black/45" data-lb-next aria-label="Další fotografie">›</button>}
     </div>
     <p class="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm text-white/70" data-lb-counter></p>
   </dialog>
@@ -248,25 +272,31 @@ const breadcrumbLd = {
   if (gallery && dlg) {
     const items = [...gallery.querySelectorAll<HTMLAnchorElement>('[data-gallery-item]')];
     const srcs = items.map((a) => a.href);
+    const alts = items.map((a) => a.dataset.galleryAlt ?? '');
     const img = dlg.querySelector<HTMLImageElement>('[data-lb-img]')!;
     const counter = dlg.querySelector<HTMLElement>('[data-lb-counter]')!;
     let i = 0;
+    let opener: HTMLElement | null = null;
     const show = (n: number) => {
       i = (n + srcs.length) % srcs.length;
       img.src = srcs[i];
+      img.alt = alts[i];
       counter.textContent = `${i + 1} / ${srcs.length}`;
     };
-    const open = (idx: number) => {
+    const open = (idx: number, trigger: HTMLElement) => {
+      opener = trigger;
       show(idx);
       dlg.showModal();
       window.dataLayer?.push({ event: 'gallery_open', page: location.pathname, photo_index: idx + 1 });
     };
-    items.forEach((a, idx) => a.addEventListener('click', (e) => { e.preventDefault(); open(idx); }));
-    gallery.querySelector('[data-gallery-all]')?.addEventListener('click', () => open(0));
+    items.forEach((a, idx) => a.addEventListener('click', (e) => { e.preventDefault(); open(idx, a); }));
+    const allButton = gallery.querySelector<HTMLElement>('[data-gallery-all]');
+    allButton?.addEventListener('click', () => open(0, allButton));
     dlg.querySelector('[data-lb-close]')?.addEventListener('click', () => dlg.close());
     dlg.querySelector('[data-lb-prev]')?.addEventListener('click', () => show(i - 1));
     dlg.querySelector('[data-lb-next]')?.addEventListener('click', () => show(i + 1));
     dlg.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft') show(i - 1); if (e.key === 'ArrowRight') show(i + 1); });
     dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener('close', () => opener?.focus());
   }
 </script>

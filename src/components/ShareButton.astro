@@ -9,10 +9,10 @@ const url = new URL(Astro.url.pathname, Astro.site).toString();
 const mailto = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`Našel jsem tuhle nemovitost, co ty na to?\n\n${title}\n${url}`)}`;
 ---
 <div class:list={['flex flex-wrap items-center gap-x-5 gap-y-2', cls]} data-share data-url={url} data-title={title}>
-  <button type="button" class="text-[11px] font-medium uppercase tracking-[0.16em] text-ink underline decoration-line underline-offset-[6px] hover:decoration-ink" data-share-btn>
+  <button type="button" class="inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.16em] text-ink underline decoration-line underline-offset-[6px] hover:decoration-ink" data-share-btn>
     Sdílet
   </button>
-  <a href={mailto} class="text-[11px] font-medium uppercase tracking-[0.16em] text-ink underline decoration-line underline-offset-[6px] hover:decoration-ink">
+  <a href={mailto} class="inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.16em] text-ink underline decoration-line underline-offset-[6px] hover:decoration-ink">
     Poslat na e-mail
   </a>
   <span class="text-sm text-ok" hidden data-share-done role="status">Odkaz zkopírován</span>

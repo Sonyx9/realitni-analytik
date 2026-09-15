@@ -1,5 +1,4 @@
 ---
-/** Karta nemovitosti podle referencí: fotka se štítkem, pod ní cena (serif), titulek a adresa ve verzálkách. */
 import { Image } from 'astro:assets';
 import { formatCena, shortFacts, lokalitaKratce, STATUS_LABEL, TYP_LABEL, type Nemovitost } from '@/lib/format';
 
@@ -9,10 +8,12 @@ const d = item.data;
 const href = `/nemovitosti/${item.id}/`;
 const inactive = d.status === 'prodano' || d.status === 'pronajato';
 const facts = shortFacts(item);
-const badge = d.status !== 'aktivni' ? STATUS_LABEL[d.status] : d.nabidka === 'pronajem' ? 'K pronájmu' : 'Na prodej';
+const detailFacts = facts.filter((fact) => fact !== d.dispozice);
+const offerLabel = d.nabidka === 'pronajem' ? 'Pronájem' : 'Prodej';
+const typeLine = [offerLabel, TYP_LABEL[d.typ], d.dispozice].filter(Boolean).join(' · ');
 ---
 <article
-  class="group relative flex h-full flex-col"
+  class="group relative flex h-full flex-col rounded-md bg-paper transition-shadow hover:shadow-panel focus-within:shadow-panel"
   data-typ={d.typ}
   data-nabidka={d.nabidka}
   data-status={d.status}
@@ -20,7 +21,7 @@ const badge = d.status !== 'aktivni' ? STATUS_LABEL[d.status] : d.nabidka === 'p
   data-cena={d.cena ?? ''}
   data-datum={d.datum.toISOString()}
 >
-  <a href={href} class="relative block aspect-[4/3] overflow-hidden bg-beton-deep" tabindex="-1" aria-hidden="true">
+  <div class="relative aspect-[4/3] overflow-hidden rounded-t-md bg-beton-deep">
     <Image
       src={d.obrazky[0]}
       alt=""
@@ -29,17 +30,21 @@ const badge = d.status !== 'aktivni' ? STATUS_LABEL[d.status] : d.nabidka === 'p
       widths={[400, 800, 1200]}
       sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw"
       format="webp"
-      quality={78}
+      quality={80}
       loading={eager ? 'eager' : 'lazy'}
-      class:list={['h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]', { 'opacity-70 grayscale-[0.5]': inactive }]}
+      class:list={['h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.025]', { 'opacity-75 grayscale-[0.35]': inactive }]}
     />
-    <span class:list={['absolute left-3 top-3 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em]', inactive || d.status === 'rezervovano' ? 'bg-ink text-white' : 'bg-paper/95 text-ink']}>{badge}</span>
-  </a>
-  <div class="flex flex-1 flex-col pt-4">
-    <p class:list={['num font-serif text-2xl font-medium', inactive ? 'text-mute line-through decoration-1' : 'text-ink']} style="font-variation-settings:'opsz' 32">{formatCena(item)}</p>
-    <h3 class="mt-1.5 font-sans text-[0.95rem] font-medium leading-snug tracking-normal">
-      <a href={href} class="after:absolute after:inset-0 hover:text-wine">{d.subtitle ?? d.title}</a>
+    {d.status !== 'aktivni' && <span class="absolute left-3 top-3 rounded-sm bg-ink px-3 py-1.5 text-[13px] font-semibold text-white">{STATUS_LABEL[d.status]}</span>}
+  </div>
+  <div class="flex flex-1 flex-col border-x border-b border-line p-5">
+    <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-[13px] font-semibold text-mute">
+      <p>{typeLine}</p>
+      <p>{lokalitaKratce(item)}</p>
+    </div>
+    <h3 class="mt-3 font-sans text-[1.2rem] font-semibold leading-snug tracking-normal">
+      <a href={href} class="rounded-sm after:absolute after:inset-0 group-hover:text-wine focus-visible:outline-none">{d.subtitle ?? d.title}</a>
     </h3>
-    <p class="mt-2 text-[10px] font-medium uppercase tracking-[0.16em] text-mute">{lokalitaKratce(item)}{facts.length ? ` · ${facts.join(' · ')}` : ''}</p>
+    <p class:list={['num mt-5 text-xl font-semibold', inactive ? 'text-mute' : 'text-ink']}>{formatCena(item)}</p>
+    {detailFacts.length > 0 && <p class="mt-2 text-[13px] leading-relaxed text-mute">{detailFacts.join(' · ')}</p>}
   </div>
 </article>

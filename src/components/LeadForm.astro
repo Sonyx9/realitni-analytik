@@ -4,6 +4,7 @@ import { site } from '@/data/site';
 import TurnstileField from './TurnstileField.astro';
 interface Props {
   formId: string; // "zajem" | "kontakt" | "koupe"
+  submissionType?: string; // hodnota podporovaná backendem; formId může zůstat unikátní pro DOM
   subject?: string; // např. název nemovitosti
   submitLabel?: string;
   messageLabel?: string;
@@ -12,13 +13,13 @@ interface Props {
   class?: string;
 }
 const {
-  formId, subject, submitLabel = 'Odeslat zprávu', messageLabel = 'Zpráva',
+  formId, submissionType = formId, subject, submitLabel = 'Odeslat zprávu', messageLabel = 'Zpráva',
   messagePlaceholder = '', compact = false, class: cls = '',
 } = Astro.props;
 const uid = `lf-${formId}-${Math.random().toString(36).slice(2, 7)}`;
 ---
 <form action={site.formEndpoint} method="post" class:list={['grid gap-4', cls]} data-lead-form novalidate>
-  <input type="hidden" name="form" value={formId} />
+  <input type="hidden" name="form" value={submissionType} />
   {subject && <input type="hidden" name="predmet" value={subject} />}
   <input type="text" name="website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true" />
   <div class:list={['grid gap-4', { 'sm:grid-cols-2': !compact }]}>
@@ -39,8 +40,8 @@ const uid = `lf-${formId}-${Math.random().toString(36).slice(2, 7)}`;
     <label for={`${uid}-zprava`} class="label">{messageLabel}</label>
     <textarea id={`${uid}-zprava`} name="zprava" rows={compact ? 3 : 4} class="field" placeholder={messagePlaceholder}></textarea>
   </div>
-  <label class="flex items-start gap-3 text-sm text-ink-soft">
-    <input type="checkbox" name="souhlas" required class="mt-1 h-4 w-4 accent-wine" />
+  <label class="flex min-h-11 cursor-pointer items-start gap-3 py-1 text-sm text-ink-soft">
+    <input type="checkbox" name="souhlas" required class="mt-0.5 h-5 w-5 shrink-0 accent-wine" />
     <span>Souhlasím se zpracováním údajů za účelem vyřízení dotazu. <a href="/ochrana-osobnich-udaju/" class="underline">Podrobnosti</a></span>
   </label>
   <TurnstileField />
