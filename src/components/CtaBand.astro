@@ -2,8 +2,8 @@
 import { site } from '@/data/site';
 interface Props { title?: string; text?: string; class?: string }
 const {
-  title = 'Zjistěte, za kolik se prodá vaše nemovitost',
-  text = 'Ocenění z realizovaných prodejů, ne z inzerátů. Zdarma, do 2 pracovních dnů a bez závazku.',
+  title = 'Zeptejte se rovnou',
+  text = 'Na první odhad ceny a na to, jestli se prodej vyplatí, stačí patnáct minut po telefonu.',
   class: cls = '',
 } = Astro.props;
 ---
@@ -14,8 +14,7 @@ const {
       <p class="mt-4 max-w-xl text-lg text-white/75">{text}</p>
     </div>
     <div class="flex flex-col gap-3 sm:flex-row md:col-span-5 md:justify-end">
-      <a href="/oceneni-nemovitosti-zdarma/" class="btn btn-primary btn-lg">Chci ocenění zdarma</a>
-      <a href={site.broker.phoneHref} class="btn btn-lg border border-white/30 text-white hover:bg-white/10">Zavolat {site.broker.phone}</a>
+      <a href={site.broker.phoneHref} class="btn btn-primary btn-lg num">Zavolat {site.broker.phone}</a>
     </div>
   </div>
 </section>

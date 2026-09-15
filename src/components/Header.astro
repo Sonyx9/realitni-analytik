@@ -8,15 +8,15 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
   <div class="container-x flex h-16 items-center justify-between gap-4 lg:h-[76px]">
     <Logo class="relative z-10 lg:self-start lg:rounded-b-sm lg:bg-paper lg:p-2" />
 
-    <nav aria-label="Hlavní navigace" class="hidden items-center gap-6 whitespace-nowrap lg:flex">
+    <nav aria-label="Hlavní navigace" class="hidden items-center gap-5 whitespace-nowrap lg:flex xl:gap-6">
       {nav.map((item) => (
         <a href={item.href} class:list={['border-b-2 border-transparent py-2 text-sm font-medium text-ink-soft transition-colors hover:text-ink', { 'border-wine text-ink': isActive(item.href) }]} aria-current={isActive(item.href) ? 'page' : undefined}>{item.label}</a>
       ))}
     </nav>
 
     <div class="hidden items-center gap-2 whitespace-nowrap lg:flex">
-      <a href={site.broker.phoneHref} class="btn btn-outline num hidden xl:inline-flex" aria-label={`Zavolat ${site.broker.phone}`}>{site.broker.phone}</a>
-      <a href="/oceneni-nemovitosti-zdarma/" class="btn btn-primary">Ocenit nemovitost</a>
+      <a href={site.broker.phoneHref} class="btn btn-outline num inline-flex" aria-label={`Zavolat ${site.broker.phone}`}>{site.broker.phone}</a>
+      <a href="/oceneni-nemovitosti-zdarma/" class="btn btn-primary hidden xl:inline-flex">Ocenit nemovitost</a>
     </div>
 
     <button type="button" class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-line text-ink lg:hidden" aria-expanded="false" aria-controls="mobile-menu" aria-label="Otevřít menu" data-menu-toggle>

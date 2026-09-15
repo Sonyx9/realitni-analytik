@@ -52,9 +52,13 @@ export const site = {
   gtmId: '',
 } as const;
 
+/**
+ * Hlavní menu. „Nemovitosti“ a „Prodej“ vedle sebe mátly – jedno je nabídka, druhé popis služby.
+ * V menu proto zůstává jen nabídka („Naše nemovitosti“); stránka /jak-prodavame/ je dostupná
+ * ze sekce služeb na úvodu a z patičky.
+ */
 export const nav = [
-  { label: 'Nemovitosti', href: '/nemovitosti/' },
-  { label: 'Prodej', href: '/jak-prodavame/' },
+  { label: 'Naše nemovitosti', href: '/nemovitosti/' },
   { label: 'Ocenění', href: '/oceneni-nemovitosti-zdarma/' },
   { label: 'Financování', href: '/financovani/' },
   { label: 'Blog', href: '/blog/' },

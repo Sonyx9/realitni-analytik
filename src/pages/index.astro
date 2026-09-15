@@ -5,6 +5,7 @@ import Base from '@/layouts/Base.astro';
 import ValuationForm from '@/components/ValuationForm.astro';
 import PropertyCard from '@/components/PropertyCard.astro';
 import Testimonials from '@/components/Testimonials.astro';
+import CtaBand from '@/components/CtaBand.astro';
 import { sortNemovitosti, formatDatum, KATEGORIE_LABEL } from '@/lib/format';
 import { site, sluzby } from '@/data/site';
 import heroMakler from '@/assets/hero-makler.jpg';
@@ -63,6 +64,17 @@ const b = site.broker;
           <span class="mt-1 block text-sm text-white/70">{b.role}</span>
         </figcaption>
       </figure>
+    </div>
+  </section>
+
+  <section class="border-b border-line bg-beton" aria-labelledby="oceneni-title">
+    <div class="container-x grid gap-8 py-16 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-16">
+      <div class="lg:col-span-4">
+        <p class="eyebrow">Ocenění nemovitosti</p>
+        <h2 id="oceneni-title" class="mt-3">Zjistěte, za kolik se může skutečně prodat</h2>
+        <p class="mt-5 text-ink-soft">Údaje poslouží jako podklad pro osobní ocenění. Výsledek dostanete zdarma do 2 pracovních dnů a bez závazku.</p>
+      </div>
+      <div class="lg:col-span-8"><ValuationForm variant="bar" /></div>
     </div>
   </section>
 
@@ -148,14 +160,5 @@ const b = site.broker;
     </div>
   </section>
 
-  <section class="border-t border-line bg-beton" aria-labelledby="oceneni-title">
-    <div class="container-x grid gap-8 py-16 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-20">
-      <div class="lg:col-span-4">
-        <p class="eyebrow">Ocenění nemovitosti</p>
-        <h2 id="oceneni-title" class="mt-3">Zjistěte, za kolik se může skutečně prodat</h2>
-        <p class="mt-5 text-ink-soft">Údaje poslouží jako podklad pro osobní ocenění. Výsledek dostanete zdarma do 2 pracovních dnů a bez závazku.</p>
-      </div>
-      <div class="lg:col-span-8"><ValuationForm variant="bar" /></div>
-    </div>
-  </section>
+  <CtaBand />
 </Base>

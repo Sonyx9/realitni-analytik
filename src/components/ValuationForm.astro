@@ -109,7 +109,7 @@ const stavy = ['novostavba', 'po rekonstrukci', 'dobrý, udržovaný', 'původn�
           ))}
         </div>
       </fieldset>
-      <div class="mt-5 grid gap-5 sm:grid-cols-2">
+      <div class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <div class="sm:col-span-2">
           <label for="f-obec" class="label">Adresa nebo obec</label>
           <input id="f-obec" name="obec" type="text" class="field" placeholder="ulice, číslo popisné, obec" required />
@@ -168,8 +168,8 @@ const stavy = ['novostavba', 'po rekonstrukci', 'dobrý, udržovaný', 'původn�
     </section>
 
     <section data-step="3" hidden>
-      <div class="grid gap-5 sm:grid-cols-2">
-        <div class="sm:col-span-2">
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="sm:col-span-2 lg:col-span-1">
           <label for="f-jmeno" class="label">Jméno a příjmení</label>
           <input id="f-jmeno" name="jmeno" type="text" class="field" autocomplete="name" required />
         </div>
