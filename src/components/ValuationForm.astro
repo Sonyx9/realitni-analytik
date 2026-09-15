@@ -7,8 +7,14 @@
  */
 import { site } from '@/data/site';
 import TurnstileField from './TurnstileField.astro';
-interface Props { variant?: 'compact' | 'full' | 'bar'; class?: string }
-const { variant = 'compact', class: cls = '' } = Astro.props;
+interface Props {
+  variant?: 'compact' | 'full' | 'bar';
+  /** Lišta má vlastní titulek. Vypněte ho tam, kde nadpis nese už sekce – ať se nedubluje
+   *  a pole dostanou celou šířku. */
+  barTitle?: boolean;
+  class?: string;
+}
+const { variant = 'compact', barTitle = true, class: cls = '' } = Astro.props;
 const typy = [
   { v: 'byt', l: 'Byt' },
   { v: 'dum', l: 'Rodinný dům' },
@@ -19,11 +25,13 @@ const stavy = ['novostavba', 'po rekonstrukci', 'dobrý, udržovaný', 'původn�
 ---
 {variant === 'bar' && (
   <form action="/oceneni-nemovitosti-zdarma/" method="get" class:list={['rounded-md border border-line bg-paper p-5 sm:p-6', cls]} aria-label="Podklady pro ocenění nemovitosti zdarma">
-    <div class="grid gap-4 lg:grid-cols-[auto_1.4fr_1fr_0.7fr_auto] lg:items-end">
-      <div class="lg:pr-4">
-        <p class="eyebrow">Ocenění zdarma</p>
-        <p class="mt-1 font-serif text-xl font-medium leading-tight" style="font-variation-settings:'opsz' 24">Za kolik se prodá vaše nemovitost?</p>
-      </div>
+    <div class:list={['grid gap-4 lg:items-end', barTitle ? 'lg:grid-cols-[auto_1.4fr_1fr_0.7fr_auto]' : 'lg:grid-cols-[1fr_1.7fr_0.8fr_auto]']}>
+      {barTitle && (
+        <div class="lg:pr-4">
+          <p class="eyebrow">Ocenění zdarma</p>
+          <p class="mt-1 font-serif text-xl font-medium leading-tight" style="font-variation-settings:'opsz' 24">Za kolik se prodá vaše nemovitost?</p>
+        </div>
+      )}
       <div>
         <label for="bar-typ" class="label">Typ nemovitosti</label>
         <select id="bar-typ" name="typ" class="field">

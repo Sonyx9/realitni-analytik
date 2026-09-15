@@ -68,13 +68,16 @@ const b = site.broker;
   </section>
 
   <section class="border-b border-line bg-beton" aria-labelledby="oceneni-title">
-    <div class="container-x grid gap-8 py-16 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-16">
-      <div class="lg:col-span-4">
-        <p class="eyebrow">Ocenění nemovitosti</p>
-        <h2 id="oceneni-title" class="mt-3">Zjistěte, za kolik se může skutečně prodat</h2>
-        <p class="mt-5 text-ink-soft">Údaje poslouží jako podklad pro osobní ocenění. Výsledek dostanete zdarma do 2 pracovních dnů a bez závazku.</p>
+    <!-- Nadpis přes celou šířku, formulář pod ním – ve dvou sloupcích vedle sebe vycházela pole úzká. -->
+    <div class="container-x py-14 lg:py-16">
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="eyebrow">Ocenění nemovitosti</p>
+          <h2 id="oceneni-title" class="mt-3">Zjistěte, za kolik se může skutečně prodat</h2>
+        </div>
+        <p class="max-w-md text-ink-soft md:text-right">Podklad pro osobní ocenění. Výsledek zdarma do 2 pracovních dnů a bez závazku.</p>
       </div>
-      <div class="lg:col-span-8"><ValuationForm variant="bar" /></div>
+      <ValuationForm variant="bar" barTitle={false} class="mt-8" />
     </div>
   </section>
 
