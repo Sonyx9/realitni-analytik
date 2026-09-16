@@ -14,6 +14,37 @@ const typyCount = Object.entries(TYP_LABEL)
   .filter((t) => t.count > 0);
 const kraje = [...new Set(aktivni.map((n) => n.data.lokalita.kraj))];
 const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
+
+/**
+ * Nabídka „Cena do“ se odvozuje z cen, které v nabídce skutečně jsou – pevný číselník by
+ * u malé nabídky nabízel většinou prázdné volby. Prodej a pronájem mají ceny o jiný řád,
+ * proto se počítají zvlášť a při přepnutí druhu se volby v poli vymění.
+ */
+function cenoveKroky(ceny: number[]): { value: number; label: string }[] {
+  if (ceny.length < 2) return []; // z jedné ceny se filtrovat nedá
+  const min = Math.min(...ceny);
+  const max = Math.max(...ceny);
+  const krok =
+    max > 20_000_000 ? 5_000_000 : max > 5_000_000 ? 1_000_000 : max > 1_000_000 ? 500_000 : max > 100_000 ? 10_000 : 5_000;
+  const out: { value: number; label: string }[] = [];
+  for (let v = Math.ceil(min / krok) * krok; v < max; v += krok) {
+    out.push({
+      value: v,
+      label:
+        v >= 1_000_000
+          ? `do ${new Intl.NumberFormat('cs-CZ', { maximumFractionDigits: 1 }).format(v / 1_000_000)} mil. Kč`
+          : `do ${new Intl.NumberFormat('cs-CZ').format(v)} Kč`,
+    });
+  }
+  return out;
+}
+
+const cenyPodleNabidky = {
+  prodej: cenoveKroky(aktivni.filter((n) => n.data.nabidka === 'prodej' && n.data.cena).map((n) => n.data.cena!)),
+  pronajem: cenoveKroky(aktivni.filter((n) => n.data.nabidka === 'pronajem' && n.data.cena).map((n) => n.data.cena!)),
+};
+/** Výchozí volby v poli – prodej tvoří drtivou většinu nabídky. */
+const cenyVychozi = cenyPodleNabidky.prodej;
 ---
 <Base
   title="Nemovitosti na prodej – Vyškov, Brno, Praha"
@@ -27,61 +58,81 @@ const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
   </section>
 
   <!--
-    Filtr je jeden souvislý panel: vlevo doleva plynou skupiny přepínačů oddělené tenkou linkou,
-    pod nimi řádek s počtem výsledků a zrušením filtru. Dřív byly přepínače a rozbalovátka
-    roztažené k protilehlým okrajům (justify-between) a mezi nimi zela díra – působilo to
-    jako dva nesouvisející ovládací prvky.
+    Vyhledávací panel nad nabídkou – stejný vizuální jazyk jako lišta ocenění na úvodu.
+    Všechna pole mají jeden tvar (popisek + rozbalovátko), takže je zřejmé, že patří k sobě.
+    Řazení není filtr, proto stojí samostatně nad výsledky. Na mobilu se panel sbalí
+    pod tlačítko „Filtrovat“ s počtem zapnutých filtrů, ať nezabere půl obrazovky.
   -->
-  <section class="container-x" aria-label="Filtr nemovitostí">
-    <div class="border-y border-line py-4" data-filters>
-      <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
-        <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Typ nemovitosti">
-          <span class="mr-1 text-sm text-mute">Typ</span>
-          <button type="button" class="chip" data-filter="typ" data-value="" aria-pressed="true">Vše ({aktivni.length})</button>
-          {typyCount.map((t) => (
-            <button type="button" class="chip" data-filter="typ" data-value={t.key} aria-pressed="false">{t.label} ({t.count})</button>
-          ))}
+  <section class="container-x pt-2" aria-label="Filtr nemovitostí">
+    <div class="flex items-center gap-3 lg:hidden">
+      <button
+        type="button"
+        class="btn btn-outline flex-1 justify-between"
+        aria-expanded="false"
+        aria-controls="filtr-panel"
+        data-filter-toggle
+      >
+        <span>Filtrovat<span class="num" data-filter-badge></span></span>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" class="shrink-0 transition-transform" data-filter-chevron><path d="m3 5 4 4 4-4" /></svg>
+      </button>
+    </div>
+
+    <div id="filtr-panel" data-filters class="mt-3 hidden rounded-md border border-line bg-paper p-5 sm:p-6 lg:mt-0 lg:block">
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {maPronajem && (
+          <div>
+            <label for="f-nabidka" class="label">Druh nabídky</label>
+            <select id="f-nabidka" class="field" data-filter-select="nabidka">
+              <option value="">Prodej i pronájem</option>
+              <option value="prodej">Prodej</option>
+              <option value="pronajem">Pronájem</option>
+            </select>
+          </div>
+        )}
+
+        <div>
+          <label for="f-typ" class="label">Typ nemovitosti</label>
+          <select id="f-typ" class="field" data-filter-select="typ">
+            <option value="">Vše ({aktivni.length})</option>
+            {typyCount.map((t) => <option value={t.key}>{t.label} ({t.count})</option>)}
+          </select>
         </div>
 
-        {maPronajem && (
-          <>
-            <span class="hidden h-6 w-px shrink-0 bg-line sm:block" aria-hidden="true"></span>
-            <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Prodej nebo pronájem">
-              <span class="mr-1 text-sm text-mute">Nabídka</span>
-              <button type="button" class="chip" data-filter="nabidka" data-value="" aria-pressed="true">Vše</button>
-              <button type="button" class="chip" data-filter="nabidka" data-value="prodej" aria-pressed="false">Prodej</button>
-              <button type="button" class="chip" data-filter="nabidka" data-value="pronajem" aria-pressed="false">Pronájem</button>
-            </div>
-          </>
-        )}
-
         {kraje.length > 1 && (
-          <>
-            <span class="hidden h-6 w-px shrink-0 bg-line sm:block" aria-hidden="true"></span>
-            <label class="flex items-center gap-2 text-sm">
-              <span class="text-mute">Oblast</span>
-              <select class="field w-auto py-2 text-sm" data-filter-select="kraj">
-                <option value="">všechny</option>
-                {kraje.map((k) => <option value={k}>{k}</option>)}
-              </select>
-            </label>
-          </>
+          <div>
+            <label for="f-kraj" class="label">Oblast</label>
+            <select id="f-kraj" class="field" data-filter-select="kraj">
+              <option value="">Všechny oblasti</option>
+              {kraje.map((k) => <option value={k}>{k}</option>)}
+            </select>
+          </div>
         )}
 
-        <label class="flex items-center gap-2 text-sm sm:ml-auto">
-          <span class="text-mute">Řadit</span>
-          <select class="field w-auto py-2 text-sm" data-sort>
-            <option value="datum-desc">nejnovější</option>
-            <option value="cena-asc">cena od nejnižší</option>
-            <option value="cena-desc">cena od nejvyšší</option>
+        <div>
+          <label for="f-cena" class="label">Cena do</label>
+          <select id="f-cena" class="field" data-filter-cena disabled={cenyVychozi.length === 0}>
+            <option value="">Bez limitu</option>
+            {cenyVychozi.map((c) => <option value={c.value}>{c.label}</option>)}
           </select>
-        </label>
+        </div>
       </div>
+    </div>
 
-      <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-        <p class="text-mute" aria-live="polite" data-result-count></p>
+    <script type="application/json" data-ceny set:html={JSON.stringify(cenyPodleNabidky)}></script>
+
+    <div class="mt-5 flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <p class="text-sm text-mute" aria-live="polite" data-result-count></p>
         <button type="button" hidden class="text-link text-sm" data-filter-reset>Zrušit filtry</button>
       </div>
+      <label class="flex items-center gap-2 text-sm">
+        <span class="text-mute">Řadit</span>
+        <select class="field w-auto py-2 text-sm" data-sort>
+          <option value="datum-desc">nejnovější</option>
+          <option value="cena-asc">cena od nejnižší</option>
+          <option value="cena-desc">cena od nejvyšší</option>
+        </select>
+      </label>
     </div>
   </section>
 
@@ -126,45 +177,70 @@ const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
 
 <script>
   /**
-   * Filtry, řazení a postupné načítání běží na klientu nad všemi kartami, které vykreslil build.
-   * Díky tomu filtr platí pro celou nabídku (ne jen pro jednu stránku) a zůstává jedna URL.
-   * Bez JS jsou vidět všechny karty – tlačítko „Načíst další“ zapíná až skript.
+   * Filtrování, řazení a postupné načítání běží na klientu nad všemi kartami, které vykreslil
+   * build. Filtr tak platí pro celou nabídku (ne jen pro jednu stránku) a zůstává jedna URL,
+   * kterou jde poslat dál. Stav se ukládá do adresy, tlačítko Zpět vrací předchozí výběr.
    */
   const PAGE_SIZE = 24;
 
-  const root = document.querySelector<HTMLElement>('[data-filters]');
+  const panel = document.querySelector<HTMLElement>('[data-filters]');
   const grid = document.querySelector<HTMLElement>('[data-grid]');
   const empty = document.querySelector<HTMLElement>('[data-empty]');
   const count = document.querySelector<HTMLElement>('[data-result-count]');
   const moreWrap = document.querySelector<HTMLElement>('[data-more-wrap]');
   const moreBtn = document.querySelector<HTMLButtonElement>('[data-more]');
   const resetBtn = document.querySelector<HTMLButtonElement>('[data-filter-reset]');
+  const cenaSel = document.querySelector<HTMLSelectElement>('[data-filter-cena]');
+  const sortSel = document.querySelector<HTMLSelectElement>('[data-sort]');
+  const toggleBtn = document.querySelector<HTMLButtonElement>('[data-filter-toggle]');
+  const badge = document.querySelector<HTMLElement>('[data-filter-badge]');
+  const chevron = document.querySelector<HTMLElement>('[data-filter-chevron]');
 
   /** Skloňování: 1 nemovitost, 2–4 nemovitosti, 5+ nemovitostí. */
   const nemovitosti = (n: number) => (n === 1 ? 'nemovitost' : n >= 2 && n <= 4 ? 'nemovitosti' : 'nemovitostí');
 
-  if (root && grid) {
+  if (panel && grid) {
     const gridEl = grid;
-    const rootEl = root;
     const cards = [...gridEl.querySelectorAll<HTMLElement>('article')];
-    const FILTER_KEYS = ['typ', 'nabidka', 'kraj'] as const;
+    const FILTER_KEYS = ['nabidka', 'typ', 'kraj'] as const;
     type FilterKey = (typeof FILTER_KEYS)[number];
 
-    const state: Record<FilterKey, string> = { typ: '', nabidka: '', kraj: '' };
+    const state: Record<FilterKey, string> = { nabidka: '', typ: '', kraj: '' };
+    let cenaMax = 0;
     let sort = 'datum-desc';
     let limit = PAGE_SIZE;
 
-    /** Načte stav z aktuální URL – používá se při startu i po tlačítku Zpět. */
+    // Cenová rozpětí pro prodej a pronájem – liší se o řád, proto se volby v poli mění.
+    const cenyJson = document.querySelector('[data-ceny]')?.textContent ?? '{}';
+    const ceny: Record<string, { value: number; label: string }[]> = JSON.parse(cenyJson);
+
+    /** Naplní pole „Cena do“ volbami pro zvolený druh nabídky. */
+    function naplnCeny(zachovat: number) {
+      if (!cenaSel) return;
+      // U smíšeného výběru dávají smysl jen ceny prodeje – pronájmy mají řádově jiné částky.
+      const seznam = ceny[state.nabidka || 'prodej'] ?? [];
+      cenaSel.replaceChildren();
+      const vse = new Option('Bez limitu', '');
+      cenaSel.append(vse);
+      for (const c of seznam) cenaSel.append(new Option(c.label, String(c.value)));
+      cenaSel.disabled = seznam.length === 0;
+      const lze = seznam.some((c) => c.value === zachovat);
+      cenaMax = lze ? zachovat : 0;
+      cenaSel.value = lze ? String(zachovat) : '';
+    }
+
     function readUrl() {
       const params = new URLSearchParams(location.search);
       for (const k of FILTER_KEYS) state[k] = params.get(k) ?? '';
       sort = params.get('sort') ?? 'datum-desc';
+      naplnCeny(Number(params.get('cena-do') ?? 0));
       limit = PAGE_SIZE;
     }
 
     function writeUrl(push: boolean) {
       const q = new URLSearchParams();
       for (const k of FILTER_KEYS) if (state[k]) q.set(k, state[k]);
+      if (cenaMax) q.set('cena-do', String(cenaMax));
       if (sort !== 'datum-desc') q.set('sort', sort);
       const url = q.toString() ? `?${q}` : location.pathname;
       if (push) history.pushState(null, '', url);
@@ -172,12 +248,16 @@ const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
     }
 
     function render() {
-      const matched = cards.filter((c) => FILTER_KEYS.every((k) => !state[k] || c.dataset[k] === state[k]));
+      const matched = cards.filter((c) => {
+        if (!FILTER_KEYS.every((k) => !state[k] || c.dataset[k] === state[k])) return false;
+        // Nemovitost bez ceny („na vyžádání“) při zadaném limitu schováme – nelze ji porovnat.
+        if (cenaMax) return Boolean(c.dataset.cena) && Number(c.dataset.cena) <= cenaMax;
+        return true;
+      });
 
       matched.sort((a, b) => {
         if (sort === 'datum-desc') return (b.dataset.datum ?? '').localeCompare(a.dataset.datum ?? '');
-        // nemovitosti bez ceny ("na vyžádání") řadíme vždy na konec
-        const ca = a.dataset.cena ? Number(a.dataset.cena) : Infinity;
+        const ca = a.dataset.cena ? Number(a.dataset.cena) : Infinity; // bez ceny vždy na konec
         const cb = b.dataset.cena ? Number(b.dataset.cena) : Infinity;
         return sort === 'cena-asc' ? ca - cb : cb - ca;
       });
@@ -198,26 +278,23 @@ const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
               ? `Zobrazeno ${shown} z ${matched.length} ${nemovitosti(matched.length)}`
               : `${matched.length} ${nemovitosti(matched.length)} v nabídce`;
       }
-      // tlačítko dává smysl jen tehdy, když je co rušit
-      const filtrovano = FILTER_KEYS.some((k) => state[k]) || sort !== 'datum-desc';
-      if (resetBtn) resetBtn.hidden = !filtrovano;
       if (moreWrap && moreBtn) {
         const zbyva = matched.length - shown;
         moreWrap.hidden = zbyva <= 0;
         moreBtn.textContent = `Načíst další (${zbyva})`;
       }
 
-      rootEl.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((b) => {
-        b.setAttribute('aria-pressed', String(state[b.dataset.filter as FilterKey] === b.dataset.value));
-      });
-      rootEl.querySelectorAll<HTMLSelectElement>('[data-filter-select]').forEach((s) => {
+      const aktivnichFiltru = FILTER_KEYS.filter((k) => state[k]).length + (cenaMax ? 1 : 0);
+      if (resetBtn) resetBtn.hidden = aktivnichFiltru === 0 && sort === 'datum-desc';
+      if (badge) badge.textContent = aktivnichFiltru ? ` (${aktivnichFiltru})` : '';
+
+      panel!.querySelectorAll<HTMLSelectElement>('[data-filter-select]').forEach((s) => {
         s.value = state[s.dataset.filterSelect as FilterKey] ?? '';
       });
-      const sortSel = rootEl.querySelector<HTMLSelectElement>('[data-sort]');
       if (sortSel) sortSel.value = sort;
     }
 
-    /** Změna filtru uživatelem: nový záznam v historii (Zpět vrátí předchozí filtr) + měření. */
+    /** Změna od uživatele: nový záznam v historii (Zpět vrátí předchozí výběr) + měření. */
     function change(kind: string, value: string) {
       limit = PAGE_SIZE;
       render();
@@ -225,37 +302,50 @@ const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
       window.dataLayer?.push({ event: 'filter_change', filter_type: kind, filter_value: value || 'vse' });
     }
 
-    rootEl.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((b) =>
-      b.addEventListener('click', () => {
-        const key = b.dataset.filter as FilterKey;
-        state[key] = b.dataset.value ?? '';
-        change(key, state[key]);
-      })
-    );
-    rootEl.querySelectorAll<HTMLSelectElement>('[data-filter-select]').forEach((s) =>
+    panel.querySelectorAll<HTMLSelectElement>('[data-filter-select]').forEach((s) =>
       s.addEventListener('change', () => {
         const key = s.dataset.filterSelect as FilterKey;
         state[key] = s.value;
+        // Přepnutí druhu mění řád cen, proto se nabídka v poli „Cena do“ přestaví.
+        if (key === 'nabidka') naplnCeny(cenaMax);
         change(key, state[key]);
       })
     );
-    rootEl.querySelector<HTMLSelectElement>('[data-sort]')?.addEventListener('change', (e) => {
-      sort = (e.currentTarget as HTMLSelectElement).value;
+
+    cenaSel?.addEventListener('change', () => {
+      cenaMax = Number(cenaSel.value) || 0;
+      // Cenové kroky jsou z prodejních cen. Kdyby zůstal druh „Prodej i pronájem“, prošel by
+      // limitem „do 5 mil.“ i pronájem za 22 000 Kč měsíčně. Druh proto rovnou přepneme na
+      // prodej – uživatel tu změnu vidí v poli nad tím, takže se nic neděje potají.
+      if (cenaMax && !state.nabidka && ceny.pronajem !== undefined) state.nabidka = 'prodej';
+      change('cena', cenaSel.value);
+    });
+
+    sortSel?.addEventListener('change', () => {
+      sort = sortSel.value;
       change('sort', sort);
+    });
+
+    resetBtn?.addEventListener('click', () => {
+      for (const k of FILTER_KEYS) state[k] = '';
+      sort = 'datum-desc';
+      naplnCeny(0);
+      change('reset', '');
     });
 
     moreBtn?.addEventListener('click', () => {
       limit += PAGE_SIZE;
       render();
       // fokus na první nově odkrytou kartu, ať klávesnice nespadne na začátek výpisu
-      const prvniNovy = cards.filter((c) => !c.hidden)[limit - PAGE_SIZE];
-      prvniNovy?.querySelector('a')?.focus({ preventScroll: true });
+      cards.filter((c) => !c.hidden)[limit - PAGE_SIZE]?.querySelector('a')?.focus({ preventScroll: true });
     });
 
-    resetBtn?.addEventListener('click', () => {
-      for (const k of FILTER_KEYS) state[k] = '';
-      sort = 'datum-desc';
-      change('reset', '');
+    // Mobil: panel je sbalený pod tlačítkem, na desktopu je vidět vždy.
+    toggleBtn?.addEventListener('click', () => {
+      const open = toggleBtn.getAttribute('aria-expanded') === 'true';
+      toggleBtn.setAttribute('aria-expanded', String(!open));
+      panel.classList.toggle('hidden', open);
+      chevron?.classList.toggle('rotate-180', !open);
     });
 
     window.addEventListener('popstate', () => {
