@@ -5,8 +5,9 @@ interface Props { class?: string; light?: boolean }
 const { class: cls = '', light = false } = Astro.props;
 const img = light ? site.logoLight || officialLogo.src : site.logo || officialLogo.src;
 ---
-<a href="/" class={`group inline-flex items-center ${cls}`} aria-label="Realitní analytik – úvodní stránka">
+<a href="/" data-logo-link class={`group inline-flex items-center ${cls}`} aria-label="Realitní analytik – úvodní stránka">
   <img
+    data-logo
     src={img}
     alt={site.name}
     width="277"

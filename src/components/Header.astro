@@ -19,6 +19,15 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
       <a href="/oceneni-nemovitosti-zdarma/" class="btn btn-primary hidden xl:inline-flex">Ocenit nemovitost</a>
     </div>
 
+    <a
+      href={site.broker.phoneHref}
+      class="btn btn-primary ml-auto inline-flex h-11 shrink-0 gap-2 px-4 text-sm lg:hidden"
+      aria-label={`Zavolat ${site.broker.phone}`}
+    >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M5.2 1.6a1 1 0 0 0-1.3-.3L2.3 2.2A2 2 0 0 0 1.4 4.5c.5 2.2 1.7 4.3 3.4 6s3.8 2.9 6 3.4a2 2 0 0 0 2.3-1l.9-1.5a1 1 0 0 0-.3-1.3l-2.2-1.5a1 1 0 0 0-1.3.2l-.7.8a10.6 10.6 0 0 1-3.1-3.1l.8-.7a1 1 0 0 0 .2-1.3z"/></svg>
+      Zavolat
+    </a>
+
     <button type="button" class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-line text-ink lg:hidden" aria-expanded="false" aria-controls="mobile-menu" aria-label="Otevřít menu" data-menu-toggle>
       <svg class="menu-open-icon" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 6h16M3 11h16M3 16h16" /></svg>
       <svg class="menu-close-icon hidden" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m5 5 12 12M17 5 5 17" /></svg>
@@ -90,6 +99,42 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
       if (window.innerWidth >= 1024 && btn.getAttribute('aria-expanded') === 'true') setOpen(false);
     });
   };
+  /** Po odscrollování se logo sbalí do lišty – viz styl níž. */
+  const initScrollState = () => {
+    const header = document.querySelector<HTMLElement>('[data-header]');
+    if (!header || header.dataset.scrollReady) return;
+    header.dataset.scrollReady = 'true';
+    const update = () => header.classList.toggle('is-scrolled', window.scrollY > 24);
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+  };
+
   initMenu();
-  document.addEventListener('astro:page-load', initMenu);
+  initScrollState();
+  document.addEventListener('astro:page-load', () => { initMenu(); initScrollState(); });
 </script>
+
+<style>
+  /*
+   * Logo na desktopu záměrně přesahuje lištu jako štítek (112 px proti 76 px vysoké liště).
+   * Jakmile se stránka odscrolluje, štítek se sbalí do lišty, ať nepřekrývá obsah.
+   */
+  [data-header] :global(a[data-logo-link]),
+  [data-header] :global(img[data-logo]) {
+    transition: height 0.25s ease, padding 0.25s ease, background-color 0.25s ease;
+  }
+  @media (min-width: 1024px) {
+    [data-header].is-scrolled :global(a[data-logo-link]) {
+      align-self: center;
+      padding: 0;
+      background-color: transparent;
+    }
+    [data-header].is-scrolled :global(img[data-logo]) {
+      height: 3.25rem; /* 52 px – vejde se do 76px lišty i s rezervou */
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-header] :global(a[data-logo-link]),
+    [data-header] :global(img[data-logo]) { transition: none; }
+  }
+</style>

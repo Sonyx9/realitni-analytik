@@ -26,30 +26,49 @@ const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
     </p>
   </section>
 
+  <!--
+    Filtr je jeden souvislý panel: vlevo doleva plynou skupiny přepínačů oddělené tenkou linkou,
+    pod nimi řádek s počtem výsledků a zrušením filtru. Dřív byly přepínače a rozbalovátka
+    roztažené k protilehlým okrajům (justify-between) a mezi nimi zela díra – působilo to
+    jako dva nesouvisející ovládací prvky.
+  -->
   <section class="container-x" aria-label="Filtr nemovitostí">
-    <div class="flex flex-col gap-4 border-y border-line py-4 lg:flex-row lg:items-center lg:justify-between" data-filters>
-      <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Typ nemovitosti">
-        <button type="button" class="chip" data-filter="typ" data-value="" aria-pressed="true">Vše ({aktivni.length})</button>
-        {typyCount.map((t) => (
-          <button type="button" class="chip" data-filter="typ" data-value={t.key} aria-pressed="false">{t.label} ({t.count})</button>
-        ))}
-      </div>
-      <div class="flex flex-wrap items-center gap-3">
+    <div class="border-y border-line py-4" data-filters>
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
+        <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Typ nemovitosti">
+          <span class="mr-1 text-sm text-mute">Typ</span>
+          <button type="button" class="chip" data-filter="typ" data-value="" aria-pressed="true">Vše ({aktivni.length})</button>
+          {typyCount.map((t) => (
+            <button type="button" class="chip" data-filter="typ" data-value={t.key} aria-pressed="false">{t.label} ({t.count})</button>
+          ))}
+        </div>
+
         {maPronajem && (
-          <div class="flex gap-2" role="group" aria-label="Prodej nebo pronájem">
-            <button type="button" class="chip" data-filter="nabidka" data-value="" aria-pressed="true">Prodej i pronájem</button>
-            <button type="button" class="chip" data-filter="nabidka" data-value="prodej" aria-pressed="false">Prodej</button>
-            <button type="button" class="chip" data-filter="nabidka" data-value="pronajem" aria-pressed="false">Pronájem</button>
-          </div>
+          <>
+            <span class="hidden h-6 w-px shrink-0 bg-line sm:block" aria-hidden="true"></span>
+            <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Prodej nebo pronájem">
+              <span class="mr-1 text-sm text-mute">Nabídka</span>
+              <button type="button" class="chip" data-filter="nabidka" data-value="" aria-pressed="true">Vše</button>
+              <button type="button" class="chip" data-filter="nabidka" data-value="prodej" aria-pressed="false">Prodej</button>
+              <button type="button" class="chip" data-filter="nabidka" data-value="pronajem" aria-pressed="false">Pronájem</button>
+            </div>
+          </>
         )}
-        <label class="flex items-center gap-2 text-sm">
-          <span class="text-mute">Oblast</span>
-          <select class="field w-auto py-2 text-sm" data-filter-select="kraj">
-            <option value="">všechny</option>
-            {kraje.map((k) => <option value={k}>{k}</option>)}
-          </select>
-        </label>
-        <label class="flex items-center gap-2 text-sm">
+
+        {kraje.length > 1 && (
+          <>
+            <span class="hidden h-6 w-px shrink-0 bg-line sm:block" aria-hidden="true"></span>
+            <label class="flex items-center gap-2 text-sm">
+              <span class="text-mute">Oblast</span>
+              <select class="field w-auto py-2 text-sm" data-filter-select="kraj">
+                <option value="">všechny</option>
+                {kraje.map((k) => <option value={k}>{k}</option>)}
+              </select>
+            </label>
+          </>
+        )}
+
+        <label class="flex items-center gap-2 text-sm sm:ml-auto">
           <span class="text-mute">Řadit</span>
           <select class="field w-auto py-2 text-sm" data-sort>
             <option value="datum-desc">nejnovější</option>
@@ -58,11 +77,15 @@ const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
           </select>
         </label>
       </div>
+
+      <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+        <p class="text-mute" aria-live="polite" data-result-count></p>
+        <button type="button" hidden class="text-link text-sm" data-filter-reset>Zrušit filtry</button>
+      </div>
     </div>
   </section>
 
   <section class="container-x py-10">
-    <p class="sr-only" aria-live="polite" data-result-count></p>
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-grid>
       {aktivni.map((n, i) => <PropertyCard item={n} eager={i < 3} />)}
     </div>
@@ -115,6 +138,10 @@ const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
   const count = document.querySelector<HTMLElement>('[data-result-count]');
   const moreWrap = document.querySelector<HTMLElement>('[data-more-wrap]');
   const moreBtn = document.querySelector<HTMLButtonElement>('[data-more]');
+  const resetBtn = document.querySelector<HTMLButtonElement>('[data-filter-reset]');
+
+  /** Skloňování: 1 nemovitost, 2–4 nemovitosti, 5+ nemovitostí. */
+  const nemovitosti = (n: number) => (n === 1 ? 'nemovitost' : n >= 2 && n <= 4 ? 'nemovitosti' : 'nemovitostí');
 
   if (root && grid) {
     const gridEl = grid;
@@ -163,7 +190,17 @@ const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
 
       const shown = Math.min(limit, matched.length);
       if (empty) empty.hidden = matched.length > 0;
-      if (count) count.textContent = `Zobrazeno ${shown} z ${matched.length} nemovitostí`;
+      if (count) {
+        count.textContent =
+          matched.length === 0
+            ? 'Žádná nemovitost neodpovídá výběru'
+            : shown < matched.length
+              ? `Zobrazeno ${shown} z ${matched.length} ${nemovitosti(matched.length)}`
+              : `${matched.length} ${nemovitosti(matched.length)} v nabídce`;
+      }
+      // tlačítko dává smysl jen tehdy, když je co rušit
+      const filtrovano = FILTER_KEYS.some((k) => state[k]) || sort !== 'datum-desc';
+      if (resetBtn) resetBtn.hidden = !filtrovano;
       if (moreWrap && moreBtn) {
         const zbyva = matched.length - shown;
         moreWrap.hidden = zbyva <= 0;
@@ -213,6 +250,12 @@ const maPronajem = aktivni.some((n) => n.data.nabidka === 'pronajem');
       // fokus na první nově odkrytou kartu, ať klávesnice nespadne na začátek výpisu
       const prvniNovy = cards.filter((c) => !c.hidden)[limit - PAGE_SIZE];
       prvniNovy?.querySelector('a')?.focus({ preventScroll: true });
+    });
+
+    resetBtn?.addEventListener('click', () => {
+      for (const k of FILTER_KEYS) state[k] = '';
+      sort = 'datum-desc';
+      change('reset', '');
     });
 
     window.addEventListener('popstate', () => {
